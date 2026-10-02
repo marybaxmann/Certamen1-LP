@@ -2,7 +2,7 @@
 
 ## Objetivo de este documento
 
-Este README documenta el proceso seguido para construir **desde cero el analizador léxico (lexer)** del Certamen 1 de Lenguajes de Programación II.
+Este README documenta el proceso seguido para construir **desde cero el analizador léxico (lexer)** del Certamen 1 de Lenguajes de Programación.
 
 La idea es que cualquier integrante del grupo pueda:
 
