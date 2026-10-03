@@ -1,68 +1,79 @@
-# Certamen 1 — Lexer del DSL para Máquina de Turing
+# Certamen 1 — DSL para Máquina de Turing con Flex y Bison
 
 ## Objetivo de este documento
 
-Este README documenta el proceso seguido para construir **desde cero el analizador léxico (lexer)** del Certamen 1 de Lenguajes de Programación.
+Este README documenta el avance actual del Certamen 1 de Lenguajes de Programación.
 
 La idea es que cualquier integrante del grupo pueda:
 
 - entender qué se está construyendo;
-- comprender por qué existen los tokens definidos;
-- saber qué decisiones de diseño se tomaron;
-- ejecutar y probar el lexer;
-- reconocer errores frecuentes;
-- continuar después con Bison sin perder el hilo del proyecto.
+- comprender el rol de Flex y Bison;
+- entender lexemas, tokens, terminales, no terminales y GLC;
+- saber cómo compilar y probar el proyecto;
+- conocer las decisiones de diseño tomadas;
+- reconocer errores que ya aparecieron y cómo se corrigieron;
+- saber exactamente qué partes faltan.
 
-> **Estado actual:** el lexer básico ya está construido y probado.  
-> **Aún no se ha implementado la gramática en Bison, las acciones semánticas, la tabla de símbolos, el intérprete ni las subrutinas funcionales.**
+> **Estado actual:** lexer funcional + integración Flex/Bison + gramática base para una máquina con alfabeto, estados, estado inicial, estados finales y transiciones.
 
 ---
 
-# 1. ¿Qué pide el certamen?
+# 1. Objetivo general del proyecto
 
-El certamen solicita implementar un **lenguaje de dominio específico (DSL)** para definir, componer y simular Máquinas de Turing.
+El certamen pide construir un **lenguaje de dominio específico (DSL)** para definir, componer y simular Máquinas de Turing.
 
-El flujo general esperado es:
+El flujo general del proyecto es:
 
 ```text
 archivo .tm
    ↓
-Lexer / Flex
+Flex
    ↓
 tokens
    ↓
-Parser / Bison
+Bison
+   ↓
+estructura sintáctica válida
    ↓
 acciones semánticas
    ↓
-representación interna
+representación interna de la máquina
    ↓
 intérprete
    ↓
 ejecución paso a paso
 ```
 
-En esta etapa solo hemos trabajado la primera parte:
+Actualmente hemos implementado principalmente:
 
 ```text
-código fuente
-   ↓
-FLEX
-   ↓
-LEXEMAS
-   ↓
-TOKENS
+Flex
++
+Bison
++
+gramática base
 ```
 
 ---
 
-# 2. Concepto clave: léxico vs sintaxis
+# 2. Herramientas utilizadas
 
-## 2.1 Léxico
+Se optó por:
 
-El análisis léxico responde:
+- **Flex** para análisis léxico.
+- **Bison** para análisis sintáctico.
+- **GCC** para compilar el código C generado.
+- **Cygwin** como entorno en Windows.
+- **VS Code** para editar los archivos.
+- **Git/GitHub** para versionamiento y respaldo.
 
-> **¿Qué es cada fragmento del código?**
+---
+
+# 3. Análisis léxico: ¿qué hace Flex?
+
+Flex responde:
+
+> **¿Qué es cada fragmento del texto fuente?**
 
 Ejemplo:
 
@@ -70,7 +81,7 @@ Ejemplo:
 maquina Complemento {
 ```
 
-El lexer puede reconocer:
+Flex reconoce:
 
 ```text
 maquina        → MAQUINA
@@ -78,370 +89,123 @@ Complemento    → ID
 {              → LLAVE_IZQ
 ```
 
-`maquina`, `Complemento` y `{` son **lexemas**.
+---
 
-`MAQUINA`, `ID` y `LLAVE_IZQ` son **tokens**.
+# 4. Lexema vs token
+
+## Lexema
+
+Es el texto concreto escrito en el programa.
+
+Ejemplos:
+
+```text
+maquina
+Complemento
+q0
+'0'
+{
+```
+
+## Token
+
+Es la categoría asignada al lexema.
+
+Ejemplos:
+
+```text
+MAQUINA
+ID
+ID
+SIMBOLO
+LLAVE_IZQ
+```
+
+Por ejemplo:
+
+```text
+Duplicador
+Complemento
+q0
+qA
+```
+
+son lexemas distintos, pero pueden pertenecer al mismo token:
+
+```text
+ID
+```
 
 ---
 
-## 2.2 Sintaxis / gramática
+# 5. Token vs terminal
 
-La gramática responderá después:
+Cuando hablamos de Flex decimos **token**.
 
-> **¿Los tokens están en un orden válido?**
-
-Por ejemplo, una futura regla podría decir:
-
-```text
-definicion_maquina:
-    MAQUINA ID LLAVE_IZQ ... LLAVE_DER
-;
-```
-
-Entonces:
-
-```text
-maquina Complemento {
-```
-
-podría ser sintácticamente válido.
-
-Pero:
-
-```text
-Complemento maquina {
-```
-
-aunque contiene lexemas válidos, tendría el orden incorrecto para esa producción.
-
----
-
-# 3. Lexema vs token
-
-Esta diferencia generó una de las primeras preguntas importantes del desarrollo.
+Cuando ese mismo token participa en la gramática de Bison, funciona como **símbolo terminal**.
 
 Ejemplo:
 
 ```text
-maquina Duplicador
+"maquina"  → lexema
+MAQUINA    → token / terminal
+maquina    → no terminal
 ```
 
-Los lexemas son:
+Regla mental:
 
 ```text
-maquina
-Duplicador
+Flex reconoce TOKENS
+        ↓
+Bison usa esos TOKENS como TERMINALES
 ```
 
-Los tokens son:
+---
+
+# 6. ¿Qué es un no terminal?
+
+Los no terminales son categorías sintácticas que definimos nosotros dentro de la gramática.
+
+Ejemplos actuales:
 
 ```text
-MAQUINA
-ID
-```
-
-`Duplicador` **no** se transforma en un token llamado `DUPLICADOR`.
-
-¿Por qué?
-
-Porque `Duplicador` es solo un nombre elegido por quien escribe el programa.
-
-También podrían existir:
-
-```text
-Complemento
-Incrementador
-q0
-qA
-mover
-escribir_unos
-```
-
-Todos son lexemas distintos, pero pertenecen a la categoría general:
-
-```text
-ID
-```
-
-En cambio:
-
-```text
+programa
 maquina
 alfabeto
+lista_simbolos
 estados
+lista_estados
 inicial
 finales
+transiciones
+lista_transiciones
+transicion
+movimiento
 ```
 
-sí tienen significado especial en el lenguaje, por lo que se tratan como **palabras reservadas**.
+No vienen desde Flex.
 
----
+Se construyen mediante reglas de producción.
 
-# 4. Herramientas utilizadas
-
-Se optó por:
-
-- **Flex** para análisis léxico.
-- **Bison** para análisis sintáctico, que se implementará después.
-- **GCC** para compilar el código C generado.
-- **Cygwin** como entorno de trabajo en Windows.
-- **VS Code** para editar los archivos.
-
----
-
-# 5. Instalación en Windows
-
-El curso trabaja con Flex/Bison y en Windows se utilizó Cygwin.
-
-Durante la instalación de Cygwin se deben agregar, como mínimo:
-
-```text
-flex
-bison
-gcc-core
-make
-```
-
-Es importante que en la selección de paquetes no quede:
-
-```text
-Skip
-```
-
-sino un número de versión.
-
----
-
-## 5.1 Verificar instalación
-
-Desde **Cygwin Terminal**:
-
-```bash
-flex --version
-bison --version
-gcc --version
-make --version
-```
-
-También se puede verificar la ubicación:
-
-```bash
-which flex
-which bison
-which gcc
-which make
-```
-
-Idealmente deben aparecer rutas del tipo:
-
-```text
-/usr/bin/flex
-/usr/bin/bison
-/usr/bin/gcc
-/usr/bin/make
-```
-
----
-
-# 6. Importante: PowerShell no es lo mismo que Cygwin
-
-Uno de los primeros errores ocurrió al ejecutar:
-
-```powershell
-flex turing.l
-```
-
-desde PowerShell en VS Code.
-
-PowerShell respondió algo similar a:
-
-```text
-flex : El término 'flex' no se reconoce...
-```
-
-Esto ocurrió porque Flex estaba instalado en Cygwin, pero PowerShell no lo tenía disponible en su PATH.
-
-## Solución usada
-
-Editar el archivo con VS Code, pero compilar desde:
-
-```text
-Cygwin Terminal
-```
-
----
-
-# 7. Carpeta del proyecto
-
-Se creó:
-
-```bash
-mkdir certamen_turing
-cd certamen_turing
-```
-
-Dentro de Cygwin:
-
-```text
-~/certamen_turing
-```
-
-equivale normalmente en Windows a:
-
-```text
-C:\cygwin64\home\usuario\certamen_turing
-```
-
-Para comprobar la ruta actual:
-
-```bash
-pwd
-```
-
-Para mostrar la ruta Windows:
-
-```bash
-cygpath -w .
-```
-
-Para abrir la carpeta en el explorador:
-
-```bash
-explorer .
-```
-
----
-
-# 8. Primer archivo Flex
-
-El archivo principal del lexer es:
-
-```text
-turing.l
-```
-
-La estructura básica de Flex es:
-
-```text
-declaraciones
-%%
-reglas
-%%
-funciones auxiliares
-```
-
-La primera versión mínima utilizada fue:
+Ejemplo:
 
 ```c
-%{
-#include <stdio.h>
-%}
-
-%%
-
-"maquina" {
-    printf("TOKEN: MAQUINA\n");
-}
-
-%%
-
-int yywrap() {
-    return 1;
-}
-
-int main() {
-    yylex();
-    return 0;
-}
+maquina:
+    MAQUINA ID LLAVE_IZQ alfabeto estados inicial finales transiciones LLAVE_DER
+;
 ```
 
----
-
-# 9. ¿Qué hace `yylex()`?
-
-`yylex()` es la función de análisis léxico generada por Flex.
-
-Cuando se ejecuta:
-
-```c
-yylex();
-```
-
-el scanner comienza a leer la entrada y busca coincidencias con los patrones declarados.
-
----
-
-# 10. Compilación del lexer
-
-Desde Cygwin:
-
-```bash
-flex turing.l
-```
-
-Flex genera:
+Aquí:
 
 ```text
-lex.yy.c
+MAQUINA, ID, LLAVE_IZQ, LLAVE_DER
 ```
 
-Luego:
+son terminales.
 
-```bash
-gcc lex.yy.c -lfl -o turing
-```
-
-Esto genera el ejecutable.
-
-Finalmente:
-
-```bash
-./turing
-```
-
----
-
-# 11. Error encontrado: `premature EOF`
-
-En una primera prueba apareció:
+Mientras:
 
 ```text
-turing.l:1: premature EOF
-```
-
-La causa fue que el archivo Flex estaba incompleto.
-
-Flex espera la estructura:
-
-```text
-declaraciones
-%%
-reglas
-%%
-funciones auxiliares
-```
-
-Después de corregir el contenido de `turing.l`, el error desapareció.
-
----
-
-# 12. Tokens definidos hasta ahora
-
-## 12.1 Palabras reservadas principales
-
-```text
-MAQUINA
-ALFABETO
-ESTADOS
-INICIAL
-FINALES
-TRANSICIONES
-```
-
-Lexemas asociados:
-
-```text
-maquina
 alfabeto
 estados
 inicial
@@ -449,121 +213,133 @@ finales
 transiciones
 ```
 
----
-
-## 12.2 Movimientos
-
-```text
-IZQ
-DER
-QUIETO
-```
-
-Estos corresponden a movimientos permitidos por la Máquina de Turing.
+son no terminales.
 
 ---
 
-## 12.3 Subrutinas
+# 7. ¿Qué es una GLC?
 
-Se decidió utilizar:
-
-```text
-SUBRUTINA
-USA
-```
-
-con los lexemas:
+GLC significa:
 
 ```text
-subrutina
-usa
+Gramática Libre de Contexto
 ```
 
-### Importante
+La GLC describe **cómo deben organizarse los tokens para formar estructuras válidas**.
 
-El certamen **sí exige la funcionalidad de subrutinas reutilizables**, incluyendo al menos una parametrizada por un entero.
+Flex reconoce las piezas.
 
-Sin embargo, el enunciado no obliga a que las palabras del DSL sean literalmente:
+Bison usa la GLC para verificar cómo se combinan.
+
+Ejemplo:
+
+```c
+maquina:
+    MAQUINA ID LLAVE_IZQ LLAVE_DER
+;
+```
+
+significa:
+
+> Una estructura `maquina` puede formarse con los terminales `MAQUINA ID LLAVE_IZQ LLAVE_DER`.
+
+La GLC se escribe principalmente en la sección entre:
 
 ```text
-subrutina
-usa
+%%
+...
+%%
 ```
 
-Estas palabras aparecen en un ejemplo ilustrativo del certamen.
-
-Se decidió adoptarlas porque:
-
-- son claras;
-- están alineadas con el ejemplo dado;
-- facilitan explicar el diseño;
-- son fáciles de reconocer con Flex;
-- luego serán simples de incorporar a la GLC.
+del archivo `turing.y`.
 
 ---
 
-## 12.4 Categorías generales
+# 8. ¿Qué significa `|` en Bison?
+
+El símbolo:
 
 ```text
-ID
-NUMERO
+|
+```
+
+significa:
+
+```text
+o
+```
+
+Ejemplo:
+
+```c
+movimiento:
+    IZQ
+    |
+    DER
+    |
+    QUIETO
+;
+```
+
+significa:
+
+> Un movimiento puede ser `IZQ`, `DER` o `QUIETO`.
+
+---
+
+# 9. Recursividad en la gramática
+
+Una regla es recursiva cuando se refiere a sí misma.
+
+Ejemplo:
+
+```c
+lista_simbolos:
+    SIMBOLO
+    |
+    lista_simbolos COMA SIMBOLO
+;
+```
+
+Esto permite reconocer:
+
+```text
+'0'
+```
+
+o:
+
+```text
+'0', '1'
+```
+
+o:
+
+```text
+'0', '1', '_'
+```
+
+La primera alternativa:
+
+```c
 SIMBOLO
 ```
 
-### ID
+es el **caso base**.
 
-Ejemplos:
+La segunda:
 
-```text
-Complemento
-Duplicador
-q0
-qA
-escribir_unos
+```c
+lista_simbolos COMA SIMBOLO
 ```
 
-Patrón usado:
-
-```text
-[a-zA-Z_][a-zA-Z0-9_]*
-```
-
-Significa:
-
-- debe comenzar con una letra o `_`;
-- puede continuar con cero o más letras, números o `_`.
+es el **caso recursivo**.
 
 ---
 
-### NUMERO
+# 10. Decisión de diseño: símbolos entre comillas simples
 
-Ejemplos:
-
-```text
-0
-5
-123
-```
-
-Patrón:
-
-```text
-[0-9]+
-```
-
-El `+` significa:
-
-```text
-una o más repeticiones
-```
-
----
-
-### SIMBOLO
-
-Esta fue una decisión de diseño importante.
-
-Los símbolos del alfabeto se escribirán entre comillas simples:
+Se decidió escribir los símbolos del alfabeto así:
 
 ```text
 '0'
@@ -573,12 +349,6 @@ Los símbolos del alfabeto se escribirán entre comillas simples:
 '#'
 ```
 
-Patrón:
-
-```text
-\'[^\']\'
-```
-
 Esto permite distinguir:
 
 ```text
@@ -586,78 +356,48 @@ Esto permite distinguir:
 '0'    → SIMBOLO
 ```
 
-El certamen indica que cada símbolo del alfabeto es de un solo carácter, por lo que esta notación evita conflictos léxicos.
+Patrón en Flex:
+
+```c
+\'[^\']\'
+```
+
+Esta convención fue elegida para evitar ambigüedad entre enteros y símbolos del alfabeto.
 
 ---
 
-# 13. ¿Por qué poner los símbolos entre comillas?
+# 11. Tokens definidos en Flex
 
-Sin comillas:
-
-```text
-0
-```
-
-podría representar:
-
-- un número entero para un parámetro;
-- o un símbolo del alfabeto.
-
-Eso genera una decisión léxica incómoda.
-
-Con nuestra convención:
+## Palabras reservadas
 
 ```text
-0      → NUMERO
-'0'    → SIMBOLO
+MAQUINA
+ALFABETO
+ESTADOS
+INICIAL
+FINALES
+TRANSICIONES
+SUBRUTINA
+USA
 ```
 
-la diferencia queda explícita.
-
-Por ejemplo:
+## Movimientos
 
 ```text
-escribir_unos(5)
+IZQ
+DER
+QUIETO
 ```
 
-usa:
+## Categorías generales
 
 ```text
-5 → NUMERO
+ID
+NUMERO
+SIMBOLO
 ```
 
-Mientras:
-
-```text
-alfabeto { '0', '1', '_' }
-```
-
-usa:
-
-```text
-'0' → SIMBOLO
-'1' → SIMBOLO
-'_' → SIMBOLO
-```
-
----
-
-# 14. Símbolos estructurales
-
-También se reconocen:
-
-```text
-{
-}
-:
-;
-,
-->
-(
-)
-```
-
-Con los tokens:
+## Símbolos estructurales
 
 ```text
 LLAVE_IZQ
@@ -670,226 +410,37 @@ PARENTESIS_IZQ
 PARENTESIS_DER
 ```
 
-Ejemplo:
-
-```text
-inicial: q0;
-```
-
-produce:
-
-```text
-INICIAL
-DOS_PUNTOS
-ID
-PUNTO_COMA
-```
-
 ---
 
-# 15. Palabras reservadas antes de `ID`
-
-La regla general:
-
-```text
-[a-zA-Z_][a-zA-Z0-9_]*
-```
-
-también puede reconocer palabras como:
-
-```text
-maquina
-DER
-usa
-subrutina
-```
-
-Por eso las palabras reservadas deben aparecer antes de la regla general de `ID`.
-
-Ejemplo:
-
-```c
-"DER" {
-    printf("TOKEN: DER\n");
-}
-
-[a-zA-Z_][a-zA-Z0-9_]* {
-    printf("TOKEN: ID, lexema: %s\n", yytext);
-}
-```
-
-Así:
-
-```text
-DER → DER
-```
-
-y no:
-
-```text
-DER → ID
-```
-
----
-
-# 16. `yytext`
-
-`yytext` contiene el lexema exacto que Flex acaba de reconocer.
-
-Ejemplo:
-
-```text
-Duplicador
-```
-
-La regla:
-
-```c
-[a-zA-Z_][a-zA-Z0-9_]* {
-    printf("TOKEN: ID, lexema: %s\n", yytext);
-}
-```
-
-produce:
-
-```text
-TOKEN: ID, lexema: Duplicador
-```
-
----
-
-# 17. Espacios ignorados
-
-Se utiliza:
-
-```c
-[ \t\n]+ {
-    /* ignorar espacios, tabuladores y saltos de línea */
-}
-```
-
-Esto permite consumir:
-
-- espacios;
-- tabuladores;
-- saltos de línea.
-
-No producen tokens.
-
----
-
-# 18. Comentarios
-
-Se decidió permitir comentarios estilo:
-
-```text
-// comentario
-```
-
-Regla:
-
-```c
-"//".* {
-    /* ignorar comentario */
-}
-```
-
-El comentario no produce ningún token.
-
----
-
-# 19. Caracteres inválidos
-
-Como última regla se agregó:
-
-```c
-. {
-    printf("ERROR LEXICO: caracter no reconocido: %s\n", yytext);
-}
-```
-
-El `.` funciona como regla general para cualquier carácter que no haya sido reconocido previamente.
-
-Ejemplo:
-
-```text
-@
-```
-
-produce:
-
-```text
-ERROR LEXICO: caracter no reconocido: @
-```
-
-Esta regla debe quedar al final.
-
----
-
-# 20. Código actual de `turing.l`
+# 12. Código actual de `turing.l`
 
 ```c
 %{
 #include <stdio.h>
+#include "turing.tab.h"
 %}
 
 %%
 
-"maquina" {
-    printf("TOKEN: MAQUINA\n");
-}
+"maquina" { return MAQUINA; }
+"alfabeto" { return ALFABETO; }
+"estados" { return ESTADOS; }
+"inicial" { return INICIAL; }
+"finales" { return FINALES; }
+"transiciones" { return TRANSICIONES; }
 
-"alfabeto" {
-    printf("TOKEN: ALFABETO\n");
-}
+"IZQ" { return IZQ; }
+"DER" { return DER; }
+"QUIETO" { return QUIETO; }
 
-"estados" {
-    printf("TOKEN: ESTADOS\n");
-}
+"subrutina" { return SUBRUTINA; }
+"usa" { return USA; }
 
-"inicial" {
-    printf("TOKEN: INICIAL\n");
-}
+\'[^\']\' { return SIMBOLO; }
 
-"finales" {
-    printf("TOKEN: FINALES\n");
-}
+[0-9]+ { return NUMERO; }
 
-"transiciones" {
-    printf("TOKEN: TRANSICIONES\n");
-}
-
-"IZQ" {
-    printf("TOKEN: IZQ\n");
-}
-
-"DER" {
-    printf("TOKEN: DER\n");
-}
-
-"QUIETO" {
-    printf("TOKEN: QUIETO\n");
-}
-
-"subrutina" {
-    printf("TOKEN: SUBRUTINA\n");
-}
-
-"usa" {
-    printf("TOKEN: USA\n");
-}
-
-\'[^\']\' {
-    printf("TOKEN: SIMBOLO, lexema: %s\n", yytext);
-}
-
-[0-9]+ {
-    printf("TOKEN: NUMERO, lexema: %s\n", yytext);
-}
-
-[a-zA-Z_][a-zA-Z0-9_]* {
-    printf("TOKEN: ID, lexema: %s\n", yytext);
-}
+[a-zA-Z_][a-zA-Z0-9_]* { return ID; }
 
 "//".* {
     /* ignorar comentario */
@@ -899,37 +450,14 @@ Esta regla debe quedar al final.
     /* ignorar espacios, tabuladores y saltos de línea */
 }
 
-"{" {
-    printf("TOKEN: LLAVE_IZQ\n");
-}
-
-"}" {
-    printf("TOKEN: LLAVE_DER\n");
-}
-
-":" {
-    printf("TOKEN: DOS_PUNTOS\n");
-}
-
-";" {
-    printf("TOKEN: PUNTO_COMA\n");
-}
-
-"," {
-    printf("TOKEN: COMA\n");
-}
-
-"->" {
-    printf("TOKEN: FLECHA\n");
-}
-
-"(" {
-    printf("TOKEN: PARENTESIS_IZQ\n");
-}
-
-")" {
-    printf("TOKEN: PARENTESIS_DER\n");
-}
+"{" { return LLAVE_IZQ; }
+"}" { return LLAVE_DER; }
+":" { return DOS_PUNTOS; }
+";" { return PUNTO_COMA; }
+"," { return COMA; }
+"->" { return FLECHA; }
+"(" { return PARENTESIS_IZQ; }
+")" { return PARENTESIS_DER; }
 
 . {
     printf("ERROR LEXICO: caracter no reconocido: %s\n", yytext);
@@ -940,159 +468,322 @@ Esta regla debe quedar al final.
 int yywrap() {
     return 1;
 }
+```
+
+---
+
+# 13. ¿Por qué ya no usamos `printf` para los tokens?
+
+Antes se utilizaba:
+
+```c
+printf("TOKEN: MAQUINA\n");
+```
+
+Eso servía para probar el lexer de forma aislada.
+
+Ahora Flex debe entregar los tokens a Bison:
+
+```c
+return MAQUINA;
+```
+
+El flujo actual es:
+
+```text
+yyparse()
+   ↓
+necesita un token
+   ↓
+yylex()
+   ↓
+Flex reconoce un lexema
+   ↓
+return TOKEN
+   ↓
+Bison recibe el token
+```
+
+---
+
+# 14. ¿Qué es `turing.tab.h`?
+
+`turing.tab.h` es generado automáticamente por Bison.
+
+Se crea con:
+
+```bash
+bison -d turing.y
+```
+
+Bison genera:
+
+```text
+turing.tab.c
+turing.tab.h
+```
+
+El archivo:
+
+```text
+turing.tab.h
+```
+
+contiene las definiciones de tokens utilizadas por Bison.
+
+Por eso Flex incluye:
+
+```c
+#include "turing.tab.h"
+```
+
+No se debe editar manualmente.
+
+---
+
+# 15. Archivos del proyecto
+
+Los archivos que nosotros editamos son:
+
+```text
+turing.l
+turing.y
+```
+
+Los archivos generados son:
+
+```text
+lex.yy.c
+turing.tab.c
+turing.tab.h
+```
+
+Y el ejecutable final es:
+
+```text
+turing
+```
+
+No conviene editar manualmente los archivos generados.
+
+---
+
+# 16. Estructura de `turing.y`
+
+Bison tiene tres secciones principales:
+
+```text
+declaraciones
+%%
+gramática
+%%
+código C
+```
+
+---
+
+# 17. Código actual de `turing.y`
+
+```c
+%{
+#include <stdio.h>
+
+/* Existe una función llamada yylex() que será generada por Flex
+   y que entregará tokens al parser de Bison. */
+int yylex();
+
+/* Función que Bison utilizará para reportar errores sintácticos. */
+void yyerror(const char *s);
+%}
+
+
+/* Estos nombres son tokens.
+   En la gramática funcionan como símbolos terminales.
+   Son los símbolos que pueden llegar desde Flex. */
+
+%token MAQUINA
+%token ALFABETO
+%token ESTADOS
+%token INICIAL
+%token FINALES
+%token TRANSICIONES
+
+%token IZQ
+%token DER
+%token QUIETO
+
+%token SUBRUTINA
+%token USA
+
+%token ID
+%token NUMERO
+%token SIMBOLO
+
+%token LLAVE_IZQ
+%token LLAVE_DER
+%token DOS_PUNTOS
+%token PUNTO_COMA
+%token COMA
+%token FLECHA
+%token PARENTESIS_IZQ
+%token PARENTESIS_DER
+
+
+%%
+
+
+programa:
+    maquina
+;
+
+maquina:
+    MAQUINA ID LLAVE_IZQ alfabeto estados inicial finales transiciones LLAVE_DER
+;
+
+alfabeto:
+    ALFABETO LLAVE_IZQ lista_simbolos LLAVE_DER
+;
+
+lista_simbolos:
+    SIMBOLO
+    |
+    lista_simbolos COMA SIMBOLO
+;
+
+estados:
+    ESTADOS LLAVE_IZQ lista_estados LLAVE_DER
+;
+
+lista_estados:
+    ID
+    |
+    lista_estados COMA ID
+;
+
+inicial:
+    INICIAL DOS_PUNTOS ID PUNTO_COMA
+;
+
+finales:
+    FINALES DOS_PUNTOS LLAVE_IZQ lista_estados LLAVE_DER PUNTO_COMA
+;
+
+transiciones:
+    TRANSICIONES LLAVE_IZQ lista_transiciones LLAVE_DER
+;
+
+lista_transiciones:
+    transicion
+    |
+    lista_transiciones transicion
+;
+
+transicion:
+    ID COMA SIMBOLO FLECHA ID COMA SIMBOLO COMA movimiento PUNTO_COMA
+;
+
+movimiento:
+    IZQ
+    |
+    DER
+    |
+    QUIETO
+;
+
+
+%%
+
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error sintactico: %s\n", s);
+}
 
 int main() {
-    yylex();
-    return 0;
+    return yyparse();
 }
 ```
 
 ---
 
-# 21. Pruebas realizadas
+# 18. ¿Qué significa `QUIETO`?
 
-## Prueba 1 — palabra reservada e identificador
-
-Entrada:
+`QUIETO` es uno de los movimientos posibles del cabezal de la Máquina de Turing.
 
 ```text
-maquina Duplicador
+IZQ     → mover una celda a la izquierda
+DER     → mover una celda a la derecha
+QUIETO  → permanecer en la misma celda
 ```
 
-Salida esperada:
+Ejemplo:
 
 ```text
-TOKEN: MAQUINA
-TOKEN: ID, lexema: Duplicador
-```
-
----
-
-## Prueba 2 — número
-
-Entrada:
-
-```text
-123
-```
-
-Salida:
-
-```text
-TOKEN: NUMERO, lexema: 123
+q0, '_' -> qA, '_', QUIETO;
 ```
 
 ---
 
-## Prueba 3 — movimiento
+# 19. Compilación
 
-Entrada:
+Dentro de:
 
 ```text
-q0, q1 -> qA, q0, DER;
+~/certamen_turing
 ```
 
-Salida esperada:
+ejecutar:
 
-```text
-TOKEN: ID, lexema: q0
-TOKEN: COMA
-TOKEN: ID, lexema: q1
-TOKEN: FLECHA
-TOKEN: ID, lexema: qA
-TOKEN: COMA
-TOKEN: ID, lexema: q0
-TOKEN: COMA
-TOKEN: DER
-TOKEN: PUNTO_COMA
+```bash
+bison -d turing.y
+flex turing.l
+gcc turing.tab.c lex.yy.c -lfl -o turing
 ```
 
----
+Después:
 
-## Prueba 4 — subrutinas
-
-Entrada:
-
-```text
-subrutina escribir_unos
-usa escribir_unos
-```
-
-Salida:
-
-```text
-TOKEN: SUBRUTINA
-TOKEN: ID, lexema: escribir_unos
-TOKEN: USA
-TOKEN: ID, lexema: escribir_unos
+```bash
+./turing
 ```
 
 ---
 
-## Prueba 5 — número vs símbolo
+# 20. Orden de generación
 
-Entrada:
+El orden importa.
 
-```text
-0
-'0'
-'1'
-'_'
-'a'
+Primero:
+
+```bash
+bison -d turing.y
 ```
 
-Salida esperada:
+porque crea:
 
 ```text
-TOKEN: NUMERO, lexema: 0
-TOKEN: SIMBOLO, lexema: '0'
-TOKEN: SIMBOLO, lexema: '1'
-TOKEN: SIMBOLO, lexema: '_'
-TOKEN: SIMBOLO, lexema: 'a'
+turing.tab.h
 ```
 
----
+Luego:
 
-## Prueba 6 — comentario
-
-Entrada:
-
-```text
-// esto es un comentario
+```bash
+flex turing.l
 ```
 
-No debería producir tokens.
+Finalmente:
 
----
-
-## Prueba 7 — error léxico
-
-Entrada:
-
-```text
-@
-```
-
-Salida:
-
-```text
-ERROR LEXICO: caracter no reconocido: @
+```bash
+gcc turing.tab.c lex.yy.c -lfl -o turing
 ```
 
 ---
 
-# 22. Prueba completa recomendada
-
-Entrada:
+# 21. Prueba completa válida
 
 ```text
 maquina Complemento {
     alfabeto { '0', '1', '_' }
-
     estados { q0, qA }
-
     inicial: q0;
-
     finales: { qA };
 
     transiciones {
@@ -1103,155 +794,406 @@ maquina Complemento {
 }
 ```
 
-En esta etapa no se verifica todavía que la estructura sea correcta.
-
-Flex solo debe reconocer y mostrar correctamente cada token.
-
 ---
 
-# 23. Preguntas que surgieron durante el desarrollo
+# 22. Pruebas sintácticas inválidas
 
-## ¿`maquina` y `MAQUINA` son lo mismo?
-
-No.
+## Falta una coma
 
 ```text
-maquina → lexema
-MAQUINA → token
+alfabeto { '0' '1' '_' }
+```
+
+## Falta `:`
+
+```text
+inicial q0;
+```
+
+## Falta `;`
+
+```text
+inicial: q0
+```
+
+## Forma incorrecta de finales
+
+```text
+finales: qA;
+```
+
+Nuestra gramática espera:
+
+```text
+finales: { qA };
+```
+
+## Falta flecha
+
+```text
+q0, '0' q0, '1', DER;
 ```
 
 ---
 
-## ¿`Duplicador` debería producir `DUPLICADOR`?
+# 23. Importante: una estructura aislada no es un programa completo
 
-No.
-
-Produce:
-
-```text
-ID
-```
-
-porque es un identificador elegido por el usuario.
-
----
-
-## ¿Por qué `DER` no debe ser `ID`?
-
-Porque tiene significado propio dentro del DSL.
-
-Por eso se trata como palabra reservada:
-
-```text
-DER → DER
-```
-
----
-
-## ¿Por qué `subrutina` y `usa` son palabras reservadas?
-
-El certamen exige definir e invocar subrutinas, pero no obliga a utilizar esas palabras exactas.
-
-Se adoptaron porque aparecen en el ejemplo ilustrativo del enunciado y generan una sintaxis clara.
-
----
-
-## ¿Por qué `'0'` es distinto de `0`?
-
-Porque se decidió que:
-
-```text
-0   → NUMERO
-'0' → SIMBOLO
-```
-
-Así se evita confundir parámetros enteros con símbolos del alfabeto.
-
----
-
-## ¿El lexer ya valida que `q0` sea un estado declarado?
-
-No.
-
-Eso corresponde a una validación **semántica**, no léxica.
-
----
-
-## ¿El lexer comprueba que `maquina` venga antes de un `ID`?
-
-No.
-
-Eso corresponde al **parser / gramática**.
-
----
-
-# 24. Qué NO hace todavía el proyecto
-
-Todavía no se ha implementado:
-
-- Bison;
-- Gramática Libre de Contexto;
-- parser;
-- acciones semánticas;
-- tabla de símbolos;
-- validación de estados;
-- validación del alfabeto;
-- determinismo de transiciones;
-- representación interna de la máquina;
-- cinta;
-- cabezal;
-- simulación;
-- subrutinas reales;
-- composición;
-- Makefile final.
-
----
-
-# 25. Próximo paso
-
-El siguiente paso será comenzar la integración:
-
-```text
-Flex + Bison
-```
-
-Actualmente las reglas hacen cosas como:
+Actualmente:
 
 ```c
-printf("TOKEN: MAQUINA\n");
+programa:
+    maquina
+;
 ```
 
-Después pasarán a devolver tokens:
-
-```c
-return MAQUINA;
-```
-
-El parser recibirá esos tokens y podrá aplicar una GLC.
-
-El primer objetivo de Bison será reconocer una construcción mínima como:
+Por eso ejecutar únicamente:
 
 ```text
-maquina Complemento {
+inicial: q0;
+```
+
+produce error.
+
+La regla `inicial` puede estar correcta, pero Bison espera un `programa` completo.
+
+---
+
+# 24. Error encontrado: dos funciones `main()`
+
+Al integrar Flex y Bison apareció:
+
+```text
+multiple definition of `main'
+```
+
+La causa era que existía un `main()` en `turing.l` y otro en `turing.y`.
+
+La solución fue eliminar el `main()` de `turing.l`.
+
+Actualmente solo queda:
+
+```c
+int main() {
+    return yyparse();
 }
 ```
 
-y luego iremos agregando:
+---
+
+# 25. Error frecuente: escribir DSL cuando ya estamos en Bash
+
+Cuando vuelve a aparecer:
 
 ```text
-alfabeto
-estados
-inicial
-finales
-transiciones
-subrutinas
+usuario@DESKTOP... $
 ```
 
-de forma incremental.
+ya estamos nuevamente en Bash.
+
+Si ahí escribimos:
+
+```text
+alfabeto { '0', '1', '_' }
+```
+
+Bash intentará ejecutar `alfabeto` como un comando.
+
+Esto no es un error de la gramática.
 
 ---
 
-# 26. Resumen mental del progreso
+# 26. Recomendación: probar usando archivos `.tm`
+
+Crear:
+
+```text
+prueba.tm
+```
+
+y ejecutar:
+
+```bash
+./turing < prueba.tm
+```
+
+Esto evita escribir manualmente toda la máquina.
+
+---
+
+# 27. Conflictos `reduce/reduce`
+
+Un conflicto `reduce/reduce` ocurre cuando Bison encuentra dos reducciones posibles para la misma entrada.
+
+Ejemplo conceptual:
+
+```c
+estado:
+    ID
+;
+
+nombre:
+    ID
+;
+```
+
+Si ambas reglas fueran posibles en el mismo punto, Bison podría dudar entre:
+
+```text
+ID → estado
+```
+
+y:
+
+```text
+ID → nombre
+```
+
+La versión actual de la gramática debe compilar sin esas advertencias.
+
+---
+
+# 28. Diferencia entre sintaxis y semántica
+
+Ejemplo:
+
+```text
+estados { q0, qA }
+inicial: q99;
+```
+
+Sintácticamente puede ser válido.
+
+Pero `q99` no fue declarado.
+
+Eso será un error **semántico**, no sintáctico.
+
+Otro ejemplo:
+
+```text
+alfabeto { '0', '1' }
+```
+
+puede ser sintácticamente válido.
+
+Pero la pauta exige que el alfabeto incluya el símbolo blanco `_`.
+
+Eso se verificará semánticamente.
+
+---
+
+# 29. Estado actual respecto a la pauta
+
+## Ya implementado en la parte sintáctica
+
+- nombre de máquina;
+- alfabeto;
+- lista de símbolos;
+- estados;
+- lista de estados;
+- estado inicial;
+- estados finales;
+- función de transición;
+- lista de transiciones;
+- movimientos `IZQ`, `DER`, `QUIETO`;
+- lexer con Flex;
+- parser inicial con Bison;
+- integración Flex/Bison.
+
+---
+
+# 30. PENDIENTES
+
+## 30.1 Permitir una o más máquinas
+
+Actualmente:
+
+```c
+programa:
+    maquina
+;
+```
+
+acepta solo una máquina.
+
+La pauta pide permitir **una o más máquinas**.
+
+El siguiente cambio será:
+
+```c
+programa:
+    maquina
+    |
+    programa maquina
+;
+```
+
+---
+
+## 30.2 Subrutinas reutilizables
+
+Falta implementar realmente:
+
+```text
+SUBRUTINA
+USA
+```
+
+Se debe permitir:
+
+- definir subrutinas nombradas;
+- invocarlas desde una máquina;
+- componer máquinas con ellas;
+- generar los estados/transiciones correspondientes.
+
+---
+
+## 30.3 Subrutina parametrizada
+
+Se exige al menos una subrutina parametrizada por entero.
+
+Ejemplos:
+
+```text
+escribir_unos(n)
+desplazar(n)
+```
+
+Los tokens `NUMERO`, `PARENTESIS_IZQ` y `PARENTESIS_DER` ya existen, pero aún no se usan en la gramática.
+
+---
+
+## 30.4 Acciones semánticas
+
+Actualmente Bison verifica estructura.
+
+Falta hacer que, al reconocer construcciones, se almacenen datos reales de la máquina.
+
+---
+
+## 30.5 Tabla de símbolos
+
+Falta almacenar y consultar:
+
+- estados declarados;
+- símbolos del alfabeto;
+- estado inicial;
+- estados finales;
+- nombres de máquinas/subrutinas si corresponde.
+
+---
+
+## 30.6 Validaciones semánticas obligatorias
+
+Falta comprobar:
+
+- que `_` pertenezca al alfabeto;
+- que el estado inicial exista;
+- que los estados finales existan;
+- que los estados usados en las transiciones hayan sido declarados;
+- que los símbolos leídos/escritos pertenezcan al alfabeto;
+- determinismo: no repetir el mismo par `(estado, símbolo leído)`.
+
+---
+
+## 30.7 Representación interna
+
+Después del parsing se debe construir internamente la máquina.
+
+Ejemplo:
+
+```text
+inicial = q0
+finales = { qA }
+
+(q0, '0') → (q0, '1', DER)
+(q0, '1') → (q0, '0', DER)
+(q0, '_') → (qA, '_', QUIETO)
+```
+
+---
+
+## 30.8 Intérprete
+
+Falta implementar:
+
+- cinta;
+- estado actual;
+- posición del cabezal;
+- lectura;
+- escritura;
+- movimiento;
+- cambio de estado.
+
+---
+
+## 30.9 Manejo de cinta
+
+Hay que decidir y documentar:
+
+- cinta acotada o extensible;
+- comportamiento en los extremos;
+- símbolo blanco.
+
+---
+
+## 30.10 Traza paso a paso
+
+Debe mostrar:
+
+- paso;
+- estado;
+- símbolo leído;
+- acción;
+- cabezal;
+- contenido de la cinta.
+
+---
+
+## 30.11 Detención y resultado
+
+Falta manejar:
+
+- llegada a estado final;
+- ausencia de transición aplicable;
+- aceptación/rechazo/detención;
+- contenido final de la cinta.
+
+---
+
+## 30.12 Máquinas de demostración
+
+Preparar al menos dos máquinas distintas en el DSL.
+
+---
+
+## 30.13 Makefile
+
+La entrega debe compilar mediante:
+
+```bash
+make
+```
+
+Aún falta crear el `Makefile`.
+
+---
+
+## 30.14 Presentación y entrevista
+
+Falta preparar:
+
+- decisiones de diseño;
+- supuestos;
+- GLC;
+- acciones semánticas;
+- demostración en vivo;
+- dominio del código por todos los integrantes.
+
+---
+
+# 31. Resumen del avance
+
+Actualmente funciona:
 
 ```text
 CARACTERES
@@ -1260,41 +1202,40 @@ LEXEMAS
     ↓
 FLEX
     ↓
-TOKENS
+TOKENS / TERMINALES
+    ↓
+BISON
+    ↓
+GLC
+    ↓
+ESTRUCTURA SINTÁCTICA DE UNA MÁQUINA
 ```
-
-Hasta aquí llega el trabajo actual.
 
 Lo siguiente será:
 
 ```text
-TOKENS
+múltiples máquinas
     ↓
-BISON
+subrutinas
     ↓
-GRAMÁTICA
+acciones semánticas
     ↓
-ESTRUCTURA SINTÁCTICA
-```
-
-Y posteriormente:
-
-```text
-ESTRUCTURA
+tabla de símbolos
     ↓
-ACCIONES SEMÁNTICAS
+validaciones
     ↓
-REPRESENTACIÓN INTERNA
+representación interna
     ↓
-INTÉRPRETE
+intérprete
+    ↓
+traza
 ```
 
 ---
 
 ## Estado actual
 
-**Lexer básico: terminado y probado.**
-
-Siguiente etapa:
-
-**Bison + Gramática Libre de Contexto.**
+**Lexer:** funcional.  
+**Flex + Bison:** integrados.  
+**Gramática base de máquina:** funcional.  
+**Semántica e intérprete:** pendientes.
