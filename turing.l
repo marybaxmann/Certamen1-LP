@@ -1,109 +1,112 @@
 %{
 #include <stdio.h>
+#include "turing.tab.h" /*Es un archivo generado por Bison que contiene las definiciones de tokens para que Flex y Bison compartan los mismos nombres. */
 %}
 
 %%
 
 "maquina" {
-    printf("TOKEN: MAQUINA\n");
+    return MAQUINA;
 }
 
 "alfabeto" {
-    printf("TOKEN: ALFABETO\n");
+    return ALFABETO;
 }
 
 "estados" {
-    printf("TOKEN: ESTADOS\n");
+    return ESTADOS;
 }
 
 "inicial" {
-    printf("TOKEN: INICIAL\n");
+    return INICIAL;
 }
 
 "finales" {
-    printf("TOKEN: FINALES\n");
+    return FINALES;
 }
 
 "transiciones" {
-    printf("TOKEN: TRANSICIONES\n");
+    return TRANSICIONES;
 }
+
 "IZQ" {
-    printf("TOKEN: IZQ\n");
+    return IZQ;
 }
 
 "DER" {
-    printf("TOKEN: DER\n");
+    return DER;
 }
 
 "QUIETO" {
-    printf("TOKEN: QUIETO\n");
+    return QUIETO;
 }
+
 "subrutina" {
-    printf("TOKEN: SUBRUTINA\n");
+    return SUBRUTINA;
 }
 
 "usa" {
-    printf("TOKEN: USA\n");
+    return USA;
 }
 
 \'[^\']\' {
-    printf("TOKEN: SIMBOLO, lexema: %s\n", yytext);
+    return SIMBOLO;
+}
+
+[0-9]+ {
+    return NUMERO;
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-    printf("TOKEN: ID, lexema: %s\n", yytext);
-    
+    return ID;
 }
-[0-9]+ {
-    printf("TOKEN: NUMERO, lexema: %s\n", yytext);
+
+"//".* {
+    /* ignorar comentario */
 }
-[ \t\n] {
+
+[ \t\n]+ {
     /* ignorar espacios, tabuladores y saltos de línea */
 }
 
 "{" {
-    printf("TOKEN: LLAVE_IZQ\n");
+    return LLAVE_IZQ;
 }
 
 "}" {
-    printf("TOKEN: LLAVE_DER\n");
+    return LLAVE_DER;
 }
 
 ":" {
-    printf("TOKEN: DOS_PUNTOS\n");
+    return DOS_PUNTOS;
 }
 
 ";" {
-    printf("TOKEN: PUNTO_COMA\n");
+    return PUNTO_COMA;
 }
 
 "," {
-    printf("TOKEN: COMA\n");
+    return COMA;
 }
 
 "->" {
-    printf("TOKEN: FLECHA\n");
+    return FLECHA;
 }
 
 "(" {
-    printf("TOKEN: PARENTESIS_IZQ\n");
+    return PARENTESIS_IZQ;
 }
 
 ")" {
-    printf("TOKEN: PARENTESIS_DER\n");
+    return PARENTESIS_DER;
 }
 
+. {
+    printf("ERROR LEXICO: caracter no reconocido: %s\n", yytext);
+}
 
 %%
 
-
-
-
 int yywrap() {
     return 1;
-}
-
-int main() {
-    yylex();
-    return 0;
 }
