@@ -378,7 +378,7 @@ static const flex_int16_t yy_accept[100] =
 static const YY_CHAR yy_ec[256] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    2,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    2,    1,    1,    1,    1,    1,    1,    4,    5,
         6,    1,    1,    7,    8,    1,    9,   10,   10,   10,
@@ -510,8 +510,10 @@ char *yytext;
 #line 2 "turing.l"
 #include <stdio.h>
 #include "turing.tab.h" /*Es un archivo generado por Bison que contiene las definiciones de tokens para que Flex y Bison compartan los mismos nombres. */
-#line 513 "lex.yy.c"
-#line 514 "lex.yy.c"
+#include <string.h>
+#include <stdlib.h>
+#line 515 "lex.yy.c"
+#line 516 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -728,10 +730,10 @@ YY_DECL
 		}
 
 	{
-#line 6 "turing.l"
+#line 8 "turing.l"
 
 
-#line 734 "lex.yy.c"
+#line 736 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -790,77 +792,77 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 8 "turing.l"
+#line 10 "turing.l"
 {
     return MAQUINA;
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 12 "turing.l"
+#line 14 "turing.l"
 {
     return ALFABETO;
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 16 "turing.l"
+#line 18 "turing.l"
 {
     return ESTADOS;
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 20 "turing.l"
+#line 22 "turing.l"
 {
     return INICIAL;
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 24 "turing.l"
+#line 26 "turing.l"
 {
     return FINALES;
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 28 "turing.l"
+#line 30 "turing.l"
 {
     return TRANSICIONES;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 32 "turing.l"
+#line 34 "turing.l"
 {
     return IZQ;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 36 "turing.l"
+#line 38 "turing.l"
 {
     return DER;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 40 "turing.l"
+#line 42 "turing.l"
 {
     return QUIETO;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 44 "turing.l"
+#line 46 "turing.l"
 {
     return SUBRUTINA;
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 48 "turing.l"
+#line 50 "turing.l"
 {
     return USA;
 }
@@ -868,28 +870,31 @@ YY_RULE_SETUP
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 52 "turing.l"
+#line 54 "turing.l"
 {
+    yylval.texto = strdup(yytext);
     return SIMBOLO;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 56 "turing.l"
+#line 59 "turing.l"
 {
+    yylval.numero = atoi(yytext);
     return NUMERO;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 60 "turing.l"
+#line 64 "turing.l"
 {
+    yylval.texto = strdup(yytext);
     return ID;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 64 "turing.l"
+#line 69 "turing.l"
 {
     /* ignorar comentario */
 }
@@ -897,80 +902,80 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 68 "turing.l"
+#line 73 "turing.l"
 {
-    /* ignorar espacios, tabuladores y saltos de línea */
+    /* ignorar espacios, tabuladores, retorno de carro de Windows y saltos de línea */
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 72 "turing.l"
+#line 77 "turing.l"
 {
     return LLAVE_IZQ;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 76 "turing.l"
+#line 81 "turing.l"
 {
     return LLAVE_DER;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 80 "turing.l"
+#line 85 "turing.l"
 {
     return DOS_PUNTOS;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 84 "turing.l"
+#line 89 "turing.l"
 {
     return PUNTO_COMA;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 88 "turing.l"
+#line 93 "turing.l"
 {
     return COMA;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 92 "turing.l"
+#line 97 "turing.l"
 {
     return FLECHA;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 96 "turing.l"
+#line 101 "turing.l"
 {
     return PARENTESIS_IZQ;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 100 "turing.l"
+#line 105 "turing.l"
 {
     return PARENTESIS_DER;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 104 "turing.l"
+#line 109 "turing.l"
 {
     printf("ERROR LEXICO: caracter no reconocido: %s\n", yytext);
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 108 "turing.l"
+#line 113 "turing.l"
 ECHO;
 	YY_BREAK
-#line 973 "lex.yy.c"
+#line 978 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1975,7 +1980,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 108 "turing.l"
+#line 113 "turing.l"
 
 
 int yywrap() {

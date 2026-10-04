@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include "turing.tab.h" /*Es un archivo generado por Bison que contiene las definiciones de tokens para que Flex y Bison compartan los mismos nombres. */
+#include <string.h>
+#include <stdlib.h>
 %}
 
 %%
@@ -50,14 +52,17 @@
 }
 
 \'[^\']\' {
+    yylval.texto = strdup(yytext);
     return SIMBOLO;
 }
 
 [0-9]+ {
+    yylval.numero = atoi(yytext);
     return NUMERO;
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
+    yylval.texto = strdup(yytext);
     return ID;
 }
 
@@ -65,8 +70,8 @@
     /* ignorar comentario */
 }
 
-[ \t\n]+ {
-    /* ignorar espacios, tabuladores y saltos de línea */
+[ \t\r\n]+ {
+    /* ignorar espacios, tabuladores, retorno de carro de Windows y saltos de línea */
 }
 
 "{" {

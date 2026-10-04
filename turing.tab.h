@@ -65,24 +65,34 @@ extern int yydebug;
     QUIETO = 266,                  /* QUIETO  */
     SUBRUTINA = 267,               /* SUBRUTINA  */
     USA = 268,                     /* USA  */
-    ID = 269,                      /* ID  */
-    NUMERO = 270,                  /* NUMERO  */
-    SIMBOLO = 271,                 /* SIMBOLO  */
-    LLAVE_IZQ = 272,               /* LLAVE_IZQ  */
-    LLAVE_DER = 273,               /* LLAVE_DER  */
-    DOS_PUNTOS = 274,              /* DOS_PUNTOS  */
-    PUNTO_COMA = 275,              /* PUNTO_COMA  */
-    COMA = 276,                    /* COMA  */
-    FLECHA = 277,                  /* FLECHA  */
-    PARENTESIS_IZQ = 278,          /* PARENTESIS_IZQ  */
-    PARENTESIS_DER = 279           /* PARENTESIS_DER  */
+    LLAVE_IZQ = 269,               /* LLAVE_IZQ  */
+    LLAVE_DER = 270,               /* LLAVE_DER  */
+    DOS_PUNTOS = 271,              /* DOS_PUNTOS  */
+    PUNTO_COMA = 272,              /* PUNTO_COMA  */
+    COMA = 273,                    /* COMA  */
+    FLECHA = 274,                  /* FLECHA  */
+    PARENTESIS_IZQ = 275,          /* PARENTESIS_IZQ  */
+    PARENTESIS_DER = 276,          /* PARENTESIS_DER  */
+    ID = 277,                      /* ID  */
+    SIMBOLO = 278,                 /* SIMBOLO  */
+    NUMERO = 279                   /* NUMERO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 48 "turing.y"
+
+    char *texto;
+    int numero;
+
+#line 93 "turing.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

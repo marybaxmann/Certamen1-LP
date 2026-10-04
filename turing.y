@@ -7,6 +7,13 @@ int yylex();
 
 /* Función que Bison utilizará para reportar errores sintácticos. */
 void yyerror(const char *s);
+
+#define MAX_ESTADOS 100
+
+char *tabla_estados[MAX_ESTADOS];
+int cantidad_estados = 0;
+
+void agregar_estado(char *nombre);
 %}
 
 
@@ -28,9 +35,6 @@ void yyerror(const char *s);
 %token SUBRUTINA
 %token USA
 
-%token ID
-%token NUMERO
-%token SIMBOLO
 
 %token LLAVE_IZQ
 %token LLAVE_DER
@@ -41,27 +45,89 @@ void yyerror(const char *s);
 %token PARENTESIS_IZQ
 %token PARENTESIS_DER
 
+%union {
+    char *texto;
+    int numero;
+}
+%token <texto> ID
+%token <texto> SIMBOLO
+%token <numero> NUMERO
 
 %%
 
 
-/* "programa" es un símbolo no terminal.
-   Un programa, por ahora, está compuesto por una sola máquina. */
+/* Un programa está compuesto por una o más declaraciones.
+   Cada declaración puede ser una máquina o una subrutina */
 programa:
-    maquina
+    declaracion
+    |
+    programa declaracion
 ;
 
 
-/* "maquina" también es un símbolo no terminal.
-   No viene directamente desde Flex: lo definimos nosotros
-   mediante una producción de la gramática.
+/* Una declaración puede corresponder a una máquina o a una subrutina. */
+declaracion:
+    maquina
+    |
+    subrutina
+;
 
-   Para reconocer una maquina, Bison debe recibir la secuencia:
-
-   MAQUINA ID LLAVE_IZQ LLAVE_DER
-*/
 maquina:
-    MAQUINA ID LLAVE_IZQ alfabeto estados inicial finales transiciones LLAVE_DER
+    MAQUINA ID LLAVE_IZQ
+    alfabeto
+    estados
+    inicial
+    finales
+    usos_opcionales
+    transiciones
+    LLAVE_DER
+;
+
+
+/* Una subrutina puede definirse sin parámetros o con un parámetro identificado mediante un ID*/
+subrutina:
+    SUBRUTINA ID LLAVE_IZQ
+    estados
+    inicial
+    finales
+    transiciones
+    LLAVE_DER
+    |
+    SUBRUTINA ID PARENTESIS_IZQ ID PARENTESIS_DER
+    LLAVE_IZQ
+    estados
+    inicial
+    finales
+    transiciones
+    LLAVE_DER
+;
+
+
+/* Invocación de una subrutina sin parámetros.
+   Ejemplo:
+   usa mover;
+*/
+uso_subrutina:
+    USA ID PUNTO_COMA
+    |
+    USA ID PARENTESIS_IZQ NUMERO PARENTESIS_DER PUNTO_COMA
+;
+
+
+/* Una lista contiene una o más invocaciones de subrutinas. */
+lista_usos:
+    uso_subrutina
+    |
+    lista_usos uso_subrutina
+;
+
+/* Una máquina puede no utilizar subrutinas,
+   o puede contener una lista de invocaciones.
+   %empty esta producción también puede no consumir ningún token. */
+usos_opcionales:
+    %empty
+    |
+    lista_usos
 ;
 
 alfabeto:
@@ -76,7 +142,18 @@ lista_simbolos:
 ;
 
 estados:
-    ESTADOS LLAVE_IZQ lista_estados LLAVE_DER
+    ESTADOS LLAVE_IZQ lista_estados_declarados  LLAVE_DER
+;
+lista_estados_declarados:
+    ID
+    {
+        agregar_estado($1);
+    }
+    |
+    lista_estados_declarados COMA ID
+    {
+        agregar_estado($3);
+    }
 ;
 
 lista_estados:
@@ -87,6 +164,9 @@ lista_estados:
 
 inicial:
     INICIAL DOS_PUNTOS ID PUNTO_COMA
+    {
+        printf("Estado inicial recibido: %s\n", $3);
+    }
 ;
 finales:
     FINALES DOS_PUNTOS LLAVE_IZQ lista_estados LLAVE_DER PUNTO_COMA
@@ -115,8 +195,18 @@ movimiento:
 ;
 
 
+
+
 %%
 
+void agregar_estado(char *nombre) {
+    if (cantidad_estados < MAX_ESTADOS) {
+        tabla_estados[cantidad_estados] = nombre;
+        cantidad_estados++;
+
+        printf("Estado guardado: %s\n", nombre);
+    }
+}
 
 /* Bison llama a esta función cuando encuentra un error sintáctico. */
 void yyerror(const char *s) {
