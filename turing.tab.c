@@ -70,6 +70,8 @@
 #line 1 "turing.y"
 
 #include <stdio.h>
+#include <string.h>
+
 
 /* Existe una función llamada yylex() que será generada por Flex
    y que entregará tokens al parser de Bison. */
@@ -84,8 +86,9 @@ char *tabla_estados[MAX_ESTADOS];
 int cantidad_estados = 0;
 
 void agregar_estado(char *nombre);
+int existe_estado(char *nombre);
 
-#line 89 "turing.tab.c"
+#line 92 "turing.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -544,10 +547,10 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    62,    62,    64,    70,    72,    76,    89,    96,   111,
-     113,   119,   121,   128,   130,   134,   139,   141,   145,   148,
-     153,   160,   162,   166,   172,   176,   180,   182,   186,   190,
-     192,   194
+       0,    65,    65,    67,    73,    75,    79,    92,    99,   114,
+     116,   122,   124,   131,   133,   137,   142,   144,   148,   151,
+     156,   163,   172,   183,   194,   198,   202,   204,   208,   212,
+     214,   216
 };
 #endif
 
@@ -1161,31 +1164,59 @@ yyreduce:
   switch (yyn)
     {
   case 19: /* lista_estados_declarados: ID  */
-#line 149 "turing.y"
+#line 152 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1169 "turing.tab.c"
+#line 1172 "turing.tab.c"
     break;
 
   case 20: /* lista_estados_declarados: lista_estados_declarados COMA ID  */
-#line 154 "turing.y"
+#line 157 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1177 "turing.tab.c"
+#line 1180 "turing.tab.c"
+    break;
+
+  case 21: /* lista_estados: ID  */
+#line 164 "turing.y"
+    {
+        if (existe_estado((yyvsp[0].texto))) {
+            printf("Estado final valido: %s\n", (yyvsp[0].texto));
+        } else {
+            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
+        }
+    }
+#line 1192 "turing.tab.c"
+    break;
+
+  case 22: /* lista_estados: lista_estados COMA ID  */
+#line 173 "turing.y"
+    {
+        if (existe_estado((yyvsp[0].texto))) {
+            printf("Estado final valido: %s\n", (yyvsp[0].texto));
+        } else {
+            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
+        }
+    }
+#line 1204 "turing.tab.c"
     break;
 
   case 23: /* inicial: INICIAL DOS_PUNTOS ID PUNTO_COMA  */
-#line 167 "turing.y"
+#line 184 "turing.y"
     {
-        printf("Estado inicial recibido: %s\n", (yyvsp[-1].texto));
+        if (existe_estado((yyvsp[-1].texto))) {
+            printf("Estado inicial valido: %s\n", (yyvsp[-1].texto));
+        } else {
+            printf("ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n", (yyvsp[-1].texto));
+        }
     }
-#line 1185 "turing.tab.c"
+#line 1216 "turing.tab.c"
     break;
 
 
-#line 1189 "turing.tab.c"
+#line 1220 "turing.tab.c"
 
       default: break;
     }
@@ -1378,7 +1409,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 200 "turing.y"
+#line 222 "turing.y"
 
 
 void agregar_estado(char *nombre) {
@@ -1388,6 +1419,15 @@ void agregar_estado(char *nombre) {
 
         printf("Estado guardado: %s\n", nombre);
     }
+}
+int existe_estado(char *nombre) {
+    for (int i = 0; i < cantidad_estados; i++) {
+        if (strcmp(tabla_estados[i], nombre) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 /* Bison llama a esta función cuando encuentra un error sintáctico. */

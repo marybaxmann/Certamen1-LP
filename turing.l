@@ -53,7 +53,7 @@
 
 \'[^\']\' {
     yylval.texto = strdup(yytext);
-    return SIMBOLO;
+    return SIMBOLO;    
 }
 
 [0-9]+ {

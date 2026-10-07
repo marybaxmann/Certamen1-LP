@@ -1,5 +1,7 @@
 %{
 #include <stdio.h>
+#include <string.h>
+
 
 /* Existe una función llamada yylex() que será generada por Flex
    y que entregará tokens al parser de Bison. */
@@ -14,6 +16,7 @@ char *tabla_estados[MAX_ESTADOS];
 int cantidad_estados = 0;
 
 void agregar_estado(char *nombre);
+int existe_estado(char *nombre);
 %}
 
 
@@ -158,15 +161,34 @@ lista_estados_declarados:
 
 lista_estados:
     ID
+    {
+        if (existe_estado($1)) {
+            printf("Estado final valido: %s\n", $1);
+        } else {
+            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", $1);
+        }
+    }
     |
     lista_estados COMA ID
+    {
+        if (existe_estado($3)) {
+            printf("Estado final valido: %s\n", $3);
+        } else {
+            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", $3);
+        }
+    }
 ;
 
 inicial:
     INICIAL DOS_PUNTOS ID PUNTO_COMA
     {
-        printf("Estado inicial recibido: %s\n", $3);
+        if (existe_estado($3)) {
+            printf("Estado inicial valido: %s\n", $3);
+        } else {
+            printf("ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n", $3);
+        }
     }
+;
 ;
 finales:
     FINALES DOS_PUNTOS LLAVE_IZQ lista_estados LLAVE_DER PUNTO_COMA
@@ -206,6 +228,15 @@ void agregar_estado(char *nombre) {
 
         printf("Estado guardado: %s\n", nombre);
     }
+}
+int existe_estado(char *nombre) {
+    for (int i = 0; i < cantidad_estados; i++) {
+        if (strcmp(tabla_estados[i], nombre) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 /* Bison llama a esta función cuando encuentra un error sintáctico. */

@@ -6,3 +6,4 @@ subrutina mover {
         q0, '0' -> q1, '0', DER;
     }
 }
+
