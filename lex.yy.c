@@ -1,5 +1,5 @@
 
-#line 2 "lex.yy.c"
+#line 3 "lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -512,8 +512,8 @@ char *yytext;
 #include "turing.tab.h" /*Es un archivo generado por Bison que contiene las definiciones de tokens para que Flex y Bison compartan los mismos nombres. */
 #include <string.h>
 #include <stdlib.h>
-#line 515 "lex.yy.c"
 #line 516 "lex.yy.c"
+#line 517 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -733,7 +733,7 @@ YY_DECL
 #line 8 "turing.l"
 
 
-#line 736 "lex.yy.c"
+#line 737 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -975,7 +975,7 @@ YY_RULE_SETUP
 #line 113 "turing.l"
 ECHO;
 	YY_BREAK
-#line 978 "lex.yy.c"
+#line 979 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 

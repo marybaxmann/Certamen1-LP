@@ -3,6 +3,11 @@ CFLAGS = -Wall -Wextra
 LEX = flex
 YACC = bison
 
+# Desactivar reglas implicitas de make que intentan generar *.c a partir de *.y o *.l
+.SUFFIXES:
+%.c: %.y
+%.c: %.l
+
 TARGET = turing
 
 SOURCES = main.c turing.c interprete.c turing.tab.c lex.yy.c
