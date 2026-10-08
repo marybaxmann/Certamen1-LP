@@ -81,6 +81,7 @@ void yyerror(const char *s);
 #define MAX_ESTADOS 100
 #define MAX_SIMBOLOS 100
 #define MAX_TRANSICIONES 100
+#define TAM_CINTA 100
 
 char *tabla_estados[MAX_ESTADOS];
 int cantidad_estados = 0;
@@ -130,10 +131,23 @@ void agregar_transicion(
     char *simbolo_escrito,
     TipoMovimiento movimiento
 );
+Transicion *buscar_transicion(char *estado, char *simbolo);
+
+
+char cinta[TAM_CINTA];
+int posicion_cabezal = 0;
+char *estado_actual = NULL;
+
+void inicializar_cinta(const char *entrada);
+void mostrar_cinta();
+
+void convertir_simbolo(char simbolo, char resultado[4]);
 
 
 
-#line 137 "turing.tab.c"
+void ejecutar_transicion(Transicion *t);
+
+#line 151 "turing.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -592,10 +606,10 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   110,   110,   112,   118,   120,   124,   137,   144,   159,
-     161,   167,   169,   176,   178,   182,   192,   197,   204,   207,
-     212,   219,   228,   239,   250,   254,   258,   260,   264,   297,
-     302,   307
+       0,   122,   122,   124,   130,   132,   136,   149,   156,   171,
+     173,   179,   181,   188,   190,   194,   204,   209,   216,   219,
+     224,   231,   240,   251,   268,   272,   276,   278,   282,   315,
+     320,   325
 };
 #endif
 
@@ -1209,49 +1223,49 @@ yyreduce:
   switch (yyn)
     {
   case 15: /* alfabeto: ALFABETO LLAVE_IZQ lista_simbolos LLAVE_DER  */
-#line 183 "turing.y"
+#line 195 "turing.y"
  {
         if (!existe_simbolo("'_'")) {
             printf("ERROR SEMANTICO: el alfabeto debe incluir el simbolo blanco '_'.\n");
         }
     }
-#line 1219 "turing.tab.c"
+#line 1233 "turing.tab.c"
     break;
 
   case 16: /* lista_simbolos: SIMBOLO  */
-#line 193 "turing.y"
+#line 205 "turing.y"
     {
         agregar_simbolo((yyvsp[0].texto));
     }
-#line 1227 "turing.tab.c"
+#line 1241 "turing.tab.c"
     break;
 
   case 17: /* lista_simbolos: lista_simbolos COMA SIMBOLO  */
-#line 198 "turing.y"
+#line 210 "turing.y"
     {
         agregar_simbolo((yyvsp[0].texto));
     }
-#line 1235 "turing.tab.c"
+#line 1249 "turing.tab.c"
     break;
 
   case 19: /* lista_estados_declarados: ID  */
-#line 208 "turing.y"
+#line 220 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1243 "turing.tab.c"
+#line 1257 "turing.tab.c"
     break;
 
   case 20: /* lista_estados_declarados: lista_estados_declarados COMA ID  */
-#line 213 "turing.y"
+#line 225 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1251 "turing.tab.c"
+#line 1265 "turing.tab.c"
     break;
 
   case 21: /* lista_estados: ID  */
-#line 220 "turing.y"
+#line 232 "turing.y"
     {
         if (existe_estado((yyvsp[0].texto))) {
             printf("Estado final valido: %s\n", (yyvsp[0].texto));
@@ -1259,11 +1273,11 @@ yyreduce:
             printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
         }
     }
-#line 1263 "turing.tab.c"
+#line 1277 "turing.tab.c"
     break;
 
   case 22: /* lista_estados: lista_estados COMA ID  */
-#line 229 "turing.y"
+#line 241 "turing.y"
     {
         if (existe_estado((yyvsp[0].texto))) {
             printf("Estado final valido: %s\n", (yyvsp[0].texto));
@@ -1271,23 +1285,29 @@ yyreduce:
             printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
         }
     }
-#line 1275 "turing.tab.c"
+#line 1289 "turing.tab.c"
     break;
 
   case 23: /* inicial: INICIAL DOS_PUNTOS ID PUNTO_COMA  */
-#line 240 "turing.y"
+#line 252 "turing.y"
     {
         if (existe_estado((yyvsp[-1].texto))) {
+            estado_actual = (yyvsp[-1].texto);
+
             printf("Estado inicial valido: %s\n", (yyvsp[-1].texto));
+            printf("Estado actual guardado: %s\n", estado_actual);
         } else {
-            printf("ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n", (yyvsp[-1].texto));
+            printf(
+                "ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n",
+                (yyvsp[-1].texto)
+            );
         }
     }
-#line 1287 "turing.tab.c"
+#line 1307 "turing.tab.c"
     break;
 
   case 28: /* transicion: ID COMA SIMBOLO FLECHA ID COMA SIMBOLO COMA movimiento PUNTO_COMA  */
-#line 265 "turing.y"
+#line 283 "turing.y"
     {
         if (!existe_estado((yyvsp[-9].texto))) {
             printf("ERROR SEMANTICO: el estado origen '%s' no fue declarado.\n", (yyvsp[-9].texto));
@@ -1315,35 +1335,35 @@ yyreduce:
             agregar_transicion((yyvsp[-9].texto), (yyvsp[-7].texto), (yyvsp[-5].texto), (yyvsp[-3].texto), (yyvsp[-1].numero));
         }
     }
-#line 1319 "turing.tab.c"
+#line 1339 "turing.tab.c"
     break;
 
   case 29: /* movimiento: IZQ  */
-#line 298 "turing.y"
+#line 316 "turing.y"
     {
         (yyval.numero) = MOV_IZQ;
     }
-#line 1327 "turing.tab.c"
+#line 1347 "turing.tab.c"
     break;
 
   case 30: /* movimiento: DER  */
-#line 303 "turing.y"
+#line 321 "turing.y"
     {
         (yyval.numero) = MOV_DER;
     }
-#line 1335 "turing.tab.c"
+#line 1355 "turing.tab.c"
     break;
 
   case 31: /* movimiento: QUIETO  */
-#line 308 "turing.y"
+#line 326 "turing.y"
     {
         (yyval.numero) = MOV_QUIETO;
     }
-#line 1343 "turing.tab.c"
+#line 1363 "turing.tab.c"
     break;
 
 
-#line 1347 "turing.tab.c"
+#line 1367 "turing.tab.c"
 
       default: break;
     }
@@ -1536,7 +1556,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 316 "turing.y"
+#line 334 "turing.y"
 
 
 void agregar_estado(char *nombre) {
@@ -1574,7 +1594,7 @@ int existe_simbolo(char *simbolo) {
 
     return 0;
 }
-void agregar_transicion(
+ void agregar_transicion(
     char *estado_origen,
     char *simbolo_leido,
     char *estado_destino,
@@ -1587,14 +1607,16 @@ void agregar_transicion(
         tabla_transiciones[cantidad_transiciones].estado_destino = estado_destino;
         tabla_transiciones[cantidad_transiciones].simbolo_escrito = simbolo_escrito;
         tabla_transiciones[cantidad_transiciones].movimiento = movimiento;
-    printf(
-        "Transicion guardada: %s, %s -> %s, %s, movimiento=%d\n",
-        estado_origen,
-        simbolo_leido,
-        estado_destino,
-        simbolo_escrito,
-        movimiento
-    );
+
+        printf(
+            "Transicion guardada: %s, %s -> %s, %s, movimiento=%d\n",
+            estado_origen,
+            simbolo_leido,
+            estado_destino,
+            simbolo_escrito,
+            movimiento
+        );
+
         cantidad_transiciones++;
     }
 }
@@ -1617,10 +1639,68 @@ int existe_transicion(char *estado, char *simbolo) {
     return 0;
 }
 
+Transicion *buscar_transicion(char *estado, char *simbolo) {
+    for (int i = 0; i < cantidad_transiciones; i++) {
+        if (
+            strcmp(tabla_transiciones[i].estado_origen, estado) == 0 &&
+            strcmp(tabla_transiciones[i].simbolo_leido, simbolo) == 0
+        ) {
+            return &tabla_transiciones[i];
+        }
+    }
 
+    return NULL;
+}
+void inicializar_cinta(const char *entrada) {
+    /* Primero llenamos toda la cinta con blancos */
+    for (int i = 0; i < TAM_CINTA; i++) {
+        cinta[i] = '_';
+    }
 
-/* El programa inicia llamando al parser.
-   yyparse() pedirá tokens a yylex() cuando los necesite. */
-int main() {
-    return yyparse();
+    /* Luego copiamos la entrada al comienzo de la cinta */
+    int i = 0;
+
+    while (entrada[i] != '\0' && i < TAM_CINTA) {
+        cinta[i] = entrada[i];
+        i++;
+    }
+
+    /* El cabezal comienza en la primera posición */
+    posicion_cabezal = 0;
+}
+
+void mostrar_cinta() {
+    for (int i = 0; i < 10; i++) {
+        if (i == posicion_cabezal) {
+            printf("[%c]", cinta[i]);
+        } else {
+            printf(" %c ", cinta[i]);
+        }
+    }
+
+    printf("\n");
+}
+void convertir_simbolo(char simbolo, char resultado[4]) {
+    resultado[0] = '\'';
+    resultado[1] = simbolo;
+    resultado[2] = '\'';
+    resultado[3] = '\0';
+}
+void ejecutar_transicion(Transicion *t) {
+    /* 1. Escribir el nuevo símbolo en la cinta */
+    cinta[posicion_cabezal] = t->simbolo_escrito[1];
+
+    /* 2. Cambiar al estado destino */
+    estado_actual = t->estado_destino;
+
+    /* 3. Mover el cabezal */
+    if (t->movimiento == MOV_IZQ) {
+        posicion_cabezal--;
+    }
+    else if (t->movimiento == MOV_DER) {
+        posicion_cabezal++;
+    }
+    else if (t->movimiento == MOV_QUIETO) {
+        /* No cambia la posición */
+    }
 }

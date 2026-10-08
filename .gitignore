@@ -1,0 +1,6 @@
+lex.yy.c
+turing.tab.c
+turing.tab.h
+*.o
+turing.exe
+turing

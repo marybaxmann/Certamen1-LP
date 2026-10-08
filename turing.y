@@ -11,6 +11,9 @@ void yyerror(const char *s);
 #define MAX_ESTADOS 100
 #define MAX_SIMBOLOS 100
 #define MAX_TRANSICIONES 100
+#define TAM_CINTA 100
+#define MAX_FINALES 100
+
 
 char *tabla_estados[MAX_ESTADOS];
 int cantidad_estados = 0;
@@ -60,11 +63,28 @@ void agregar_transicion(
     char *simbolo_escrito,
     TipoMovimiento movimiento
 );
+Transicion *buscar_transicion(char *estado, char *simbolo);
 
 
+char cinta[TAM_CINTA];
+int posicion_cabezal = 0;
+char *estado_actual = NULL;
+
+void inicializar_cinta(const char *entrada);
+void mostrar_cinta();
+
+void convertir_simbolo(char simbolo, char resultado[4]);
+
+
+
+void ejecutar_transicion(Transicion *t);
+
+char *tabla_finales[MAX_FINALES];
+int cantidad_finales = 0;
+
+void agregar_estado_final(char *nombre);
+int es_estado_final(char *nombre);
 %}
-
-
 /* Estos nombres son tokens.
    En la gramática funcionan como símbolos terminales.
    Son los símbolos que pueden llegar desde Flex. */
@@ -219,18 +239,26 @@ lista_estados:
     ID
     {
         if (existe_estado($1)) {
+            agregar_estado_final($1);
             printf("Estado final valido: %s\n", $1);
         } else {
-            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", $1);
+            printf(
+                "ERROR SEMANTICO: el estado final '%s' no fue declarado.\n",
+                $1
+            );
         }
     }
     |
     lista_estados COMA ID
     {
         if (existe_estado($3)) {
+            agregar_estado_final($3);
             printf("Estado final valido: %s\n", $3);
         } else {
-            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", $3);
+            printf(
+                "ERROR SEMANTICO: el estado final '%s' no fue declarado.\n",
+                $3
+            );
         }
     }
 ;
@@ -239,9 +267,15 @@ inicial:
     INICIAL DOS_PUNTOS ID PUNTO_COMA
     {
         if (existe_estado($3)) {
+            estado_actual = $3;
+
             printf("Estado inicial valido: %s\n", $3);
+            printf("Estado actual guardado: %s\n", estado_actual);
         } else {
-            printf("ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n", $3);
+            printf(
+                "ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n",
+                $3
+            );
         }
     }
 ;
@@ -350,7 +384,7 @@ int existe_simbolo(char *simbolo) {
 
     return 0;
 }
-void agregar_transicion(
+ void agregar_transicion(
     char *estado_origen,
     char *simbolo_leido,
     char *estado_destino,
@@ -363,14 +397,16 @@ void agregar_transicion(
         tabla_transiciones[cantidad_transiciones].estado_destino = estado_destino;
         tabla_transiciones[cantidad_transiciones].simbolo_escrito = simbolo_escrito;
         tabla_transiciones[cantidad_transiciones].movimiento = movimiento;
-    printf(
-        "Transicion guardada: %s, %s -> %s, %s, movimiento=%d\n",
-        estado_origen,
-        simbolo_leido,
-        estado_destino,
-        simbolo_escrito,
-        movimiento
-    );
+
+        printf(
+            "Transicion guardada: %s, %s -> %s, %s, movimiento=%d\n",
+            estado_origen,
+            simbolo_leido,
+            estado_destino,
+            simbolo_escrito,
+            movimiento
+        );
+
         cantidad_transiciones++;
     }
 }
@@ -393,10 +429,83 @@ int existe_transicion(char *estado, char *simbolo) {
     return 0;
 }
 
+Transicion *buscar_transicion(char *estado, char *simbolo) {
+    for (int i = 0; i < cantidad_transiciones; i++) {
+        if (
+            strcmp(tabla_transiciones[i].estado_origen, estado) == 0 &&
+            strcmp(tabla_transiciones[i].simbolo_leido, simbolo) == 0
+        ) {
+            return &tabla_transiciones[i];
+        }
+    }
 
+    return NULL;
+}
+void inicializar_cinta(const char *entrada) {
+    /* Primero llenamos toda la cinta con blancos */
+    for (int i = 0; i < TAM_CINTA; i++) {
+        cinta[i] = '_';
+    }
 
-/* El programa inicia llamando al parser.
-   yyparse() pedirá tokens a yylex() cuando los necesite. */
-int main() {
-    return yyparse();
+    /* Luego copiamos la entrada al comienzo de la cinta */
+    int i = 0;
+
+    while (entrada[i] != '\0' && i < TAM_CINTA) {
+        cinta[i] = entrada[i];
+        i++;
+    }
+
+    /* El cabezal comienza en la primera posición */
+    posicion_cabezal = 0;
+}
+
+void mostrar_cinta() {
+    for (int i = 0; i < 10; i++) {
+        if (i == posicion_cabezal) {
+            printf("[%c]", cinta[i]);
+        } else {
+            printf(" %c ", cinta[i]);
+        }
+    }
+
+    printf("\n");
+}
+void convertir_simbolo(char simbolo, char resultado[4]) {
+    resultado[0] = '\'';
+    resultado[1] = simbolo;
+    resultado[2] = '\'';
+    resultado[3] = '\0';
+}
+void ejecutar_transicion(Transicion *t) {
+    /* 1. Escribir el nuevo símbolo en la cinta */
+    cinta[posicion_cabezal] = t->simbolo_escrito[1];
+
+    /* 2. Cambiar al estado destino */
+    estado_actual = t->estado_destino;
+
+    /* 3. Mover el cabezal */
+    if (t->movimiento == MOV_IZQ) {
+        posicion_cabezal--;
+    }
+    else if (t->movimiento == MOV_DER) {
+        posicion_cabezal++;
+    }
+    else if (t->movimiento == MOV_QUIETO) {
+        /* No cambia la posición */
+    }
+}
+void agregar_estado_final(char *nombre) {
+    if (cantidad_finales < MAX_FINALES) {
+        tabla_finales[cantidad_finales] = nombre;
+        cantidad_finales++;
+    }
+}
+int es_estado_final(char *nombre) {
+    for (int i = 0; i < cantidad_finales; i++) {
+        if (strcmp(tabla_finales[i], nombre) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
