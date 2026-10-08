@@ -3,17 +3,18 @@
 
 int yyparse();
 
-int main() {
+int main(int argc, char *argv[]) {
     int resultado = yyparse();
 
     if (resultado == 0 && maquina_definida) {
-    inicializar_cinta("000");
+        const char *entrada = (argc > 1) ? argv[1] : "000";
+        inicializar_cinta(entrada);
 
-    printf("\nCinta inicial:\n");
-    mostrar_cinta();
+        printf("\nCinta inicial:\n");
+        mostrar_cinta();
 
-    ejecutar_maquina();
-}
+        ejecutar_maquina();
+    }
 
     return resultado;
 }

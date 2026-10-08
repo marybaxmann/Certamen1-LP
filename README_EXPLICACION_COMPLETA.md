@@ -244,10 +244,14 @@ gcc main.c turing.c interprete.c turing.tab.c lex.yy.c -lfl -o turing
 podemos ejecutar:
 
 ```bash
-make
-```
-
----
+# 1. Prueba básica
+make run
+# 2. Máquina con subrutinas compuestas
+make run-subrutina
+# 3. Incrementador binario (1011 -> 1100)
+make run-incrementador
+# 4. Sumador unario (11 + 111 = 11111)
+make run-sumador
 
 # 5. ¿Qué es un DSL?
 

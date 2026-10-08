@@ -6,6 +6,7 @@ maquina A {
 
     transiciones {
         q0, '0' -> q1, '1', DER;
-        q1, '_' -> qA, '_', QUIETO;
+        q1, '0' -> q0, '0', IZQ;
+        q0, '1' -> qA, '1', QUIETO;
     }
 }

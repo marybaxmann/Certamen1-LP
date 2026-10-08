@@ -29,7 +29,13 @@ run: $(TARGET)
 run-subrutina: $(TARGET)
 	./$(TARGET) < uso_subrutina.tm
 
+run-incrementador: $(TARGET)
+	./$(TARGET) 1011 < incrementador.tm
+
+run-sumador: $(TARGET)
+	./$(TARGET) "11+111" < sumador_unario.tm
+
 clean:
 	rm -f $(TARGET) turing.exe turing.tab.c turing.tab.h lex.yy.c *.o
 
-.PHONY: all run run-subrutina clean
+.PHONY: all run run-subrutina run-incrementador run-sumador clean
