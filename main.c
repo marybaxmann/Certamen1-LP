@@ -1,29 +1,8 @@
 #include <stdio.h>
 
+#include "turing.h"
+
 int yyparse();
-
-typedef struct {
-    char *estado_origen;
-    char *simbolo_leido;
-    char *estado_destino;
-    char *simbolo_escrito;
-    int movimiento;
-} Transicion;
-
-
-/* Funciones */
-void inicializar_cinta(const char *entrada);
-void mostrar_cinta();
-void convertir_simbolo(char simbolo, char resultado[4]);
-void ejecutar_transicion(Transicion *t);
-
-Transicion *buscar_transicion(char *estado, char *simbolo);
-
-
-/* Variables que están definidas en turing.y */
-extern char *estado_actual;
-extern char cinta[];
-extern int posicion_cabezal;
 
 
 int main() {
