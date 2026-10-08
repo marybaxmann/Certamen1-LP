@@ -84,7 +84,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 108 "turing.y"
+#line 39 "turing.y"
 
     char *texto;
     int numero;

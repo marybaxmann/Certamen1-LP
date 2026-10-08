@@ -65,6 +65,9 @@ declaracion:
 
 maquina:
     MAQUINA ID LLAVE_IZQ
+    {
+        maquina_definida = 1;
+    }
     alfabeto
     estados
     inicial
@@ -78,19 +81,39 @@ maquina:
 /* Una subrutina puede definirse sin parámetros o con un parámetro identificado mediante un ID*/
 subrutina:
     SUBRUTINA ID LLAVE_IZQ
+    {
+        agregar_subrutina($2, NULL);
+
+        subrutina_actual = buscar_subrutina($2);
+        dentro_subrutina = 1;
+    }
     estados
     inicial
     finales
     transiciones
     LLAVE_DER
+    {
+        dentro_subrutina = 0;
+        subrutina_actual = NULL;
+    }
     |
     SUBRUTINA ID PARENTESIS_IZQ ID PARENTESIS_DER
     LLAVE_IZQ
+    {
+        agregar_subrutina($2, $4);
+
+        subrutina_actual = buscar_subrutina($2);
+        dentro_subrutina = 1;
+    }
     estados
     inicial
     finales
     transiciones
     LLAVE_DER
+    {
+        dentro_subrutina = 0;
+        subrutina_actual = NULL;
+    }
 ;
 
 
@@ -100,8 +123,40 @@ subrutina:
 */
 uso_subrutina:
     USA ID PUNTO_COMA
+    {
+        Subrutina *s = buscar_subrutina($2);
+
+        if (s == NULL) {
+            printf(
+                "ERROR SEMANTICO: la subrutina '%s' no fue declarada.\n",
+                $2
+            );
+        } else {
+            printf("Subrutina encontrada para uso: %s\n", $2);
+        }
+    }
     |
     USA ID PARENTESIS_IZQ NUMERO PARENTESIS_DER PUNTO_COMA
+     {
+        Subrutina *s = buscar_subrutina($2);
+
+        if (s == NULL) {
+            printf(
+                "ERROR SEMANTICO: la subrutina '%s' no fue declarada.\n",
+                $2
+            );
+        } else {
+            printf(
+                "Subrutina encontrada para uso: %s(%d)\n",
+                $2,
+                $4
+            );
+
+            if (validar_alfabeto_subrutina(s)) {
+                expandir_subrutina(s, $4);
+            }
+        }
+     }
 ;
 
 
@@ -190,10 +245,21 @@ inicial:
     INICIAL DOS_PUNTOS ID PUNTO_COMA
     {
         if (existe_estado($3)) {
-            estado_actual = $3;
 
-            printf("Estado inicial valido: %s\n", $3);
-            printf("Estado actual guardado: %s\n", estado_actual);
+            if (dentro_subrutina && subrutina_actual != NULL) {
+                subrutina_actual->estado_inicial = $3;
+
+                printf(
+                    "Estado inicial de subrutina valido: %s\n",
+                    $3
+                );
+            } else {
+                estado_actual = $3;
+
+                printf("Estado inicial valido: %s\n", $3);
+                printf("Estado actual guardado: %s\n", estado_actual);
+            }
+
         } else {
             printf(
                 "ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n",
@@ -220,20 +286,40 @@ lista_transiciones:
 transicion:
     ID COMA SIMBOLO FLECHA ID COMA SIMBOLO COMA movimiento PUNTO_COMA
     {
+        int valida = 1;
+
         if (!existe_estado($1)) {
-            printf("ERROR SEMANTICO: el estado origen '%s' no fue declarado.\n", $1);
+            printf(
+                "ERROR SEMANTICO: el estado origen '%s' no fue declarado.\n",
+                $1
+            );
+            valida = 0;
         }
 
         if (!existe_estado($5)) {
-            printf("ERROR SEMANTICO: el estado destino '%s' no fue declarado.\n", $5);
+            printf(
+                "ERROR SEMANTICO: el estado destino '%s' no fue declarado.\n",
+                $5
+            );
+            valida = 0;
         }
 
-        if (!existe_simbolo($3)) {
-            printf("ERROR SEMANTICO: el simbolo leido %s no pertenece al alfabeto.\n", $3);
-        }
+        if (!dentro_subrutina) {
+            if (!existe_simbolo($3)) {
+                printf(
+                    "ERROR SEMANTICO: el simbolo leido %s no pertenece al alfabeto.\n",
+                    $3
+                );
+                valida = 0;
+            }
 
-        if (!existe_simbolo($7)) {
-            printf("ERROR SEMANTICO: el simbolo escrito %s no pertenece al alfabeto.\n", $7);
+            if (!existe_simbolo($7)) {
+                printf(
+                    "ERROR SEMANTICO: el simbolo escrito %s no pertenece al alfabeto.\n",
+                    $7
+                );
+                valida = 0;
+            }
         }
 
         if (existe_transicion($1, $3)) {
@@ -242,12 +328,14 @@ transicion:
                 $1,
                 $3
             );
-        } else {
+            valida = 0;
+        }
+
+        if (valida) {
             agregar_transicion($1, $3, $5, $7, $9);
         }
     }
 ;
-
 
 
 movimiento:

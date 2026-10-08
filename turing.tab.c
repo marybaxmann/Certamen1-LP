@@ -70,7 +70,7 @@
 #line 1 "turing.y"
 
 #include <stdio.h>
-#include <string.h>
+#include "turing.h"
 
 /* Flex genera esta función */
 int yylex();
@@ -78,76 +78,7 @@ int yylex();
 /* Bison usa esta función para reportar errores sintácticos */
 void yyerror(const char *s);
 
-#define MAX_ESTADOS 100
-#define MAX_SIMBOLOS 100
-#define MAX_TRANSICIONES 100
-#define TAM_CINTA 100
-
-char *tabla_estados[MAX_ESTADOS];
-int cantidad_estados = 0;
-
-char *tabla_simbolos[MAX_SIMBOLOS];
-int cantidad_simbolos = 0;
-
-
-/* Funciones para estados */
-void agregar_estado(char *nombre);
-int existe_estado(char *nombre);
-
-
-/* Funciones para simbolos */
-void agregar_simbolo(char *simbolo);
-int existe_simbolo(char *simbolo);
-
-
-/* Tipos de movimiento */
-typedef enum {
-    MOV_IZQ,
-    MOV_DER,
-    MOV_QUIETO
-} TipoMovimiento;
-
-
-/* Representación interna completa de una transición */
-typedef struct {
-    char *estado_origen;
-    char *simbolo_leido;
-    char *estado_destino;
-    char *simbolo_escrito;
-    TipoMovimiento movimiento;
-} Transicion;
-
-Transicion tabla_transiciones[MAX_TRANSICIONES];
-int cantidad_transiciones = 0;
-
-
-/* Funciones para transiciones */
-int existe_transicion(char *estado, char *simbolo);
-
-void agregar_transicion(
-    char *estado_origen,
-    char *simbolo_leido,
-    char *estado_destino,
-    char *simbolo_escrito,
-    TipoMovimiento movimiento
-);
-Transicion *buscar_transicion(char *estado, char *simbolo);
-
-
-char cinta[TAM_CINTA];
-int posicion_cabezal = 0;
-char *estado_actual = NULL;
-
-void inicializar_cinta(const char *entrada);
-void mostrar_cinta();
-
-void convertir_simbolo(char simbolo, char resultado[4]);
-
-
-
-void ejecutar_transicion(Transicion *t);
-
-#line 151 "turing.tab.c"
+#line 82 "turing.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -204,21 +135,24 @@ enum yysymbol_kind_t
   YYSYMBOL_programa = 26,                  /* programa  */
   YYSYMBOL_declaracion = 27,               /* declaracion  */
   YYSYMBOL_maquina = 28,                   /* maquina  */
-  YYSYMBOL_subrutina = 29,                 /* subrutina  */
-  YYSYMBOL_uso_subrutina = 30,             /* uso_subrutina  */
-  YYSYMBOL_lista_usos = 31,                /* lista_usos  */
-  YYSYMBOL_usos_opcionales = 32,           /* usos_opcionales  */
-  YYSYMBOL_alfabeto = 33,                  /* alfabeto  */
-  YYSYMBOL_lista_simbolos = 34,            /* lista_simbolos  */
-  YYSYMBOL_estados = 35,                   /* estados  */
-  YYSYMBOL_lista_estados_declarados = 36,  /* lista_estados_declarados  */
-  YYSYMBOL_lista_estados = 37,             /* lista_estados  */
-  YYSYMBOL_inicial = 38,                   /* inicial  */
-  YYSYMBOL_finales = 39,                   /* finales  */
-  YYSYMBOL_transiciones = 40,              /* transiciones  */
-  YYSYMBOL_lista_transiciones = 41,        /* lista_transiciones  */
-  YYSYMBOL_transicion = 42,                /* transicion  */
-  YYSYMBOL_movimiento = 43                 /* movimiento  */
+  YYSYMBOL_29_1 = 29,                      /* $@1  */
+  YYSYMBOL_subrutina = 30,                 /* subrutina  */
+  YYSYMBOL_31_2 = 31,                      /* $@2  */
+  YYSYMBOL_32_3 = 32,                      /* $@3  */
+  YYSYMBOL_uso_subrutina = 33,             /* uso_subrutina  */
+  YYSYMBOL_lista_usos = 34,                /* lista_usos  */
+  YYSYMBOL_usos_opcionales = 35,           /* usos_opcionales  */
+  YYSYMBOL_alfabeto = 36,                  /* alfabeto  */
+  YYSYMBOL_lista_simbolos = 37,            /* lista_simbolos  */
+  YYSYMBOL_estados = 38,                   /* estados  */
+  YYSYMBOL_lista_estados_declarados = 39,  /* lista_estados_declarados  */
+  YYSYMBOL_lista_estados = 40,             /* lista_estados  */
+  YYSYMBOL_inicial = 41,                   /* inicial  */
+  YYSYMBOL_finales = 42,                   /* finales  */
+  YYSYMBOL_transiciones = 43,              /* transiciones  */
+  YYSYMBOL_lista_transiciones = 44,        /* lista_transiciones  */
+  YYSYMBOL_transicion = 45,                /* transicion  */
+  YYSYMBOL_movimiento = 46                 /* movimiento  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -546,16 +480,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  9
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   94
+#define YYLAST   78
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  25
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  19
+#define YYNNTS  22
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  31
+#define YYNRULES  34
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  90
+#define YYNSTATES  93
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   279
@@ -606,10 +540,10 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   122,   122,   124,   130,   132,   136,   149,   156,   171,
-     173,   179,   181,   188,   190,   194,   204,   209,   216,   219,
-     224,   231,   240,   251,   268,   272,   276,   278,   282,   315,
-     320,   325
+       0,    53,    53,    55,    61,    63,    68,    67,    84,    83,
+     102,   100,   125,   139,   165,   167,   174,   176,   180,   190,
+     195,   202,   205,   210,   217,   230,   245,   273,   277,   281,
+     283,   287,   342,   347,   352
 };
 #endif
 
@@ -629,11 +563,11 @@ static const char *const yytname[] =
   "ESTADOS", "INICIAL", "FINALES", "TRANSICIONES", "IZQ", "DER", "QUIETO",
   "SUBRUTINA", "USA", "LLAVE_IZQ", "LLAVE_DER", "DOS_PUNTOS", "PUNTO_COMA",
   "COMA", "FLECHA", "PARENTESIS_IZQ", "PARENTESIS_DER", "ID", "SIMBOLO",
-  "NUMERO", "$accept", "programa", "declaracion", "maquina", "subrutina",
-  "uso_subrutina", "lista_usos", "usos_opcionales", "alfabeto",
-  "lista_simbolos", "estados", "lista_estados_declarados", "lista_estados",
-  "inicial", "finales", "transiciones", "lista_transiciones", "transicion",
-  "movimiento", YY_NULLPTR
+  "NUMERO", "$accept", "programa", "declaracion", "maquina", "$@1",
+  "subrutina", "$@2", "$@3", "uso_subrutina", "lista_usos",
+  "usos_opcionales", "alfabeto", "lista_simbolos", "estados",
+  "lista_estados_declarados", "lista_estados", "inicial", "finales",
+  "transiciones", "lista_transiciones", "transicion", "movimiento", YY_NULLPTR
 };
 
 static const char *
@@ -643,7 +577,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-46)
+#define YYPACT_NINF (-49)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -657,15 +591,16 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       2,   -12,   -10,     4,   -46,   -46,   -46,     3,    -5,   -46,
-     -46,    15,    16,     8,    21,    16,    22,    31,    17,    18,
-      31,    20,    24,    32,    29,   -46,    -7,    32,   -46,     7,
-      25,    28,    37,    16,   -46,    26,    33,   -46,    30,    12,
-      34,    36,    38,    31,   -46,    35,   -46,    33,    37,   -46,
-     -46,    39,    40,   -46,    32,     6,   -46,    41,   -46,    13,
-      42,    -9,   -46,    37,   -46,    27,   -46,    46,    43,    44,
-     -46,   -46,    49,    45,   -46,   -46,    50,   -46,    51,    48,
-     -46,    53,    52,    54,    23,   -46,   -46,   -46,    56,   -46
+       2,   -12,   -10,     4,   -49,   -49,   -49,     3,    -5,   -49,
+     -49,   -49,   -49,    -3,    17,    24,     9,    21,    24,    22,
+      31,    25,    15,    31,    18,    26,    34,   -49,   -49,    -7,
+      34,   -49,     7,    27,    28,    35,    24,   -49,    29,    32,
+     -49,    33,    30,    36,    37,    38,    31,   -49,    39,   -49,
+      32,    35,   -49,   -49,    40,    41,   -49,    34,     6,   -49,
+      42,   -49,    13,    46,    -9,   -49,    35,   -49,    43,   -49,
+      48,    44,    45,   -49,   -49,    54,    49,   -49,   -49,    52,
+     -49,    55,    51,   -49,    56,    53,    57,    23,   -49,   -49,
+     -49,    60,   -49
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -674,28 +609,31 @@ static const yytype_int8 yypact[] =
 static const yytype_int8 yydefact[] =
 {
        0,     0,     0,     0,     2,     4,     5,     0,     0,     1,
-       3,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,    16,     0,     0,    19,     0,
-       0,     0,     0,     0,    15,     0,    13,    18,     0,     0,
-       0,     0,     0,     0,    17,     0,    11,    14,     0,    20,
-      23,     0,     0,     7,     0,     0,    12,     0,    21,     0,
-       0,     0,    26,     0,     9,     0,     6,     0,     0,     0,
-      25,    27,     0,     0,    24,    22,     0,     8,     0,     0,
-      10,     0,     0,     0,     0,    29,    30,    31,     0,    28
+       3,     6,     8,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,    10,    19,     0,
+       0,    22,     0,     0,     0,     0,     0,    18,     0,    16,
+      21,     0,     0,     0,     0,     0,     0,    20,     0,    14,
+      17,     0,    23,    26,     0,     0,     9,     0,     0,    15,
+       0,    24,     0,     0,     0,    29,     0,    12,     0,     7,
+       0,     0,     0,    28,    30,     0,     0,    27,    25,     0,
+      11,     0,     0,    13,     0,     0,     0,     0,    32,    33,
+      34,     0,    31
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -46,   -46,    55,   -46,   -46,    47,   -46,   -46,   -46,   -46,
-     -13,   -46,   -46,   -19,   -27,   -45,   -46,    -6,   -46
+     -49,   -49,    75,   -49,   -49,   -49,   -49,   -49,    -4,   -49,
+     -49,   -49,   -49,   -16,   -49,   -49,   -22,   -30,   -48,   -49,
+      -8,   -49
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     3,     4,     5,     6,    46,    47,    48,    15,    26,
-      17,    29,    59,    23,    32,    42,    61,    62,    88
+       0,     3,     4,     5,    14,     6,    15,    36,    49,    50,
+      51,    18,    29,    20,    32,    62,    26,    35,    45,    64,
+      65,    91
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -703,63 +641,60 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      36,    27,    20,    57,     9,     1,    70,     1,    34,    12,
-       7,    35,     8,    60,     2,    13,     2,    11,    72,    14,
-      43,    16,    37,    64,    54,    38,    65,    63,    67,    50,
-      18,    68,    85,    86,    87,    19,    21,    22,    24,    31,
-      30,    25,    28,    33,    40,    41,    45,    39,    51,    44,
-      52,    73,    49,    53,     0,    71,    66,    55,    10,     0,
-      69,    58,    60,    74,    77,    75,    78,    76,    80,    79,
-      81,    82,    84,    89,     0,    83,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    56
+      39,    30,    23,    60,     9,     1,    73,     1,    37,    12,
+       7,    38,     8,    63,     2,    13,     2,    11,    75,    16,
+      46,    17,    40,    67,    57,    41,    68,    66,    70,    19,
+      21,    71,    88,    89,    90,    22,    24,    25,    28,    27,
+      31,    34,    33,    44,    43,    48,    59,    53,     0,    42,
+      54,    55,    47,    56,     0,    52,    74,    69,     0,     0,
+       0,    58,    61,    63,    72,    77,    78,    76,    79,    80,
+      81,    82,    83,    84,    85,    87,    86,    92,    10
 };
 
 static const yytype_int8 yycheck[] =
 {
-      27,    20,    15,    48,     0,     3,    15,     3,    15,    14,
-      22,    18,    22,    22,    12,    20,    12,    14,    63,     4,
-      33,     5,    15,    17,    43,    18,    20,    54,    15,    17,
-      22,    18,     9,    10,    11,    14,    14,     6,    21,     7,
-      16,    23,    22,    14,    16,     8,    13,    22,    14,    23,
-      14,    24,    22,    15,    -1,    61,    15,    22,     3,    -1,
-      18,    22,    22,    17,    15,    22,    21,    23,    17,    19,
-      22,    18,    18,    17,    -1,    23,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    47
+      30,    23,    18,    51,     0,     3,    15,     3,    15,    14,
+      22,    18,    22,    22,    12,    20,    12,    14,    66,    22,
+      36,     4,    15,    17,    46,    18,    20,    57,    15,     5,
+      21,    18,     9,    10,    11,    14,    14,     6,    23,    14,
+      22,     7,    16,     8,    16,    13,    50,    17,    -1,    22,
+      14,    14,    23,    15,    -1,    22,    64,    15,    -1,    -1,
+      -1,    22,    22,    22,    18,    17,    22,    24,    23,    15,
+      21,    19,    17,    22,    18,    18,    23,    17,     3
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     3,    12,    26,    27,    28,    29,    22,    22,     0,
-      27,    14,    14,    20,     4,    33,     5,    35,    22,    14,
-      35,    14,     6,    38,    21,    23,    34,    38,    22,    36,
-      16,     7,    39,    14,    15,    18,    39,    15,    18,    22,
-      16,     8,    40,    35,    23,    13,    30,    31,    32,    22,
-      17,    14,    14,    15,    38,    22,    30,    40,    22,    37,
-      22,    41,    42,    39,    17,    20,    15,    15,    18,    18,
-      15,    42,    40,    24,    17,    22,    23,    15,    21,    19,
-      17,    22,    18,    23,    18,     9,    10,    11,    43,    17
+       0,     3,    12,    26,    27,    28,    30,    22,    22,     0,
+      27,    14,    14,    20,    29,    31,    22,     4,    36,     5,
+      38,    21,    14,    38,    14,     6,    41,    14,    23,    37,
+      41,    22,    39,    16,     7,    42,    32,    15,    18,    42,
+      15,    18,    22,    16,     8,    43,    38,    23,    13,    33,
+      34,    35,    22,    17,    14,    14,    15,    41,    22,    33,
+      43,    22,    40,    22,    44,    45,    42,    17,    20,    15,
+      15,    18,    18,    15,    45,    43,    24,    17,    22,    23,
+      15,    21,    19,    17,    22,    18,    23,    18,     9,    10,
+      11,    46,    17
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    25,    26,    26,    27,    27,    28,    29,    29,    30,
-      30,    31,    31,    32,    32,    33,    34,    34,    35,    36,
-      36,    37,    37,    38,    39,    40,    41,    41,    42,    43,
-      43,    43
+       0,    25,    26,    26,    27,    27,    29,    28,    31,    30,
+      32,    30,    33,    33,    34,    34,    35,    35,    36,    37,
+      37,    38,    39,    39,    40,    40,    41,    42,    43,    44,
+      44,    45,    46,    46,    46
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     1,    10,     8,    11,     3,
-       6,     1,     2,     0,     1,     4,     1,     3,     4,     1,
-       3,     1,     3,     4,     6,     4,     1,     2,    10,     1,
-       1,     1
+       0,     2,     1,     2,     1,     1,     0,    11,     0,     9,
+       0,    12,     3,     6,     1,     2,     0,     1,     4,     1,
+       3,     4,     1,     3,     1,     3,     4,     6,     4,     1,
+       2,    10,     1,     1,     1
 };
 
 
@@ -1222,80 +1157,189 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 15: /* alfabeto: ALFABETO LLAVE_IZQ lista_simbolos LLAVE_DER  */
-#line 195 "turing.y"
+  case 6: /* $@1: %empty  */
+#line 68 "turing.y"
+    {
+        maquina_definida = 1;
+    }
+#line 1166 "turing.tab.c"
+    break;
+
+  case 8: /* $@2: %empty  */
+#line 84 "turing.y"
+    {
+        agregar_subrutina((yyvsp[-1].texto), NULL);
+
+        subrutina_actual = buscar_subrutina((yyvsp[-1].texto));
+        dentro_subrutina = 1;
+    }
+#line 1177 "turing.tab.c"
+    break;
+
+  case 9: /* subrutina: SUBRUTINA ID LLAVE_IZQ $@2 estados inicial finales transiciones LLAVE_DER  */
+#line 95 "turing.y"
+    {
+        dentro_subrutina = 0;
+        subrutina_actual = NULL;
+    }
+#line 1186 "turing.tab.c"
+    break;
+
+  case 10: /* $@3: %empty  */
+#line 102 "turing.y"
+    {
+        agregar_subrutina((yyvsp[-4].texto), (yyvsp[-2].texto));
+
+        subrutina_actual = buscar_subrutina((yyvsp[-4].texto));
+        dentro_subrutina = 1;
+    }
+#line 1197 "turing.tab.c"
+    break;
+
+  case 11: /* subrutina: SUBRUTINA ID PARENTESIS_IZQ ID PARENTESIS_DER LLAVE_IZQ $@3 estados inicial finales transiciones LLAVE_DER  */
+#line 113 "turing.y"
+    {
+        dentro_subrutina = 0;
+        subrutina_actual = NULL;
+    }
+#line 1206 "turing.tab.c"
+    break;
+
+  case 12: /* uso_subrutina: USA ID PUNTO_COMA  */
+#line 126 "turing.y"
+    {
+        Subrutina *s = buscar_subrutina((yyvsp[-1].texto));
+
+        if (s == NULL) {
+            printf(
+                "ERROR SEMANTICO: la subrutina '%s' no fue declarada.\n",
+                (yyvsp[-1].texto)
+            );
+        } else {
+            printf("Subrutina encontrada para uso: %s\n", (yyvsp[-1].texto));
+        }
+    }
+#line 1223 "turing.tab.c"
+    break;
+
+  case 13: /* uso_subrutina: USA ID PARENTESIS_IZQ NUMERO PARENTESIS_DER PUNTO_COMA  */
+#line 140 "turing.y"
+     {
+        Subrutina *s = buscar_subrutina((yyvsp[-4].texto));
+
+        if (s == NULL) {
+            printf(
+                "ERROR SEMANTICO: la subrutina '%s' no fue declarada.\n",
+                (yyvsp[-4].texto)
+            );
+        } else {
+            printf(
+                "Subrutina encontrada para uso: %s(%d)\n",
+                (yyvsp[-4].texto),
+                (yyvsp[-2].numero)
+            );
+
+            if (validar_alfabeto_subrutina(s)) {
+                expandir_subrutina(s, (yyvsp[-2].numero));
+            }
+        }
+     }
+#line 1248 "turing.tab.c"
+    break;
+
+  case 18: /* alfabeto: ALFABETO LLAVE_IZQ lista_simbolos LLAVE_DER  */
+#line 181 "turing.y"
  {
         if (!existe_simbolo("'_'")) {
             printf("ERROR SEMANTICO: el alfabeto debe incluir el simbolo blanco '_'.\n");
         }
     }
-#line 1233 "turing.tab.c"
+#line 1258 "turing.tab.c"
     break;
 
-  case 16: /* lista_simbolos: SIMBOLO  */
-#line 205 "turing.y"
+  case 19: /* lista_simbolos: SIMBOLO  */
+#line 191 "turing.y"
     {
         agregar_simbolo((yyvsp[0].texto));
     }
-#line 1241 "turing.tab.c"
+#line 1266 "turing.tab.c"
     break;
 
-  case 17: /* lista_simbolos: lista_simbolos COMA SIMBOLO  */
-#line 210 "turing.y"
+  case 20: /* lista_simbolos: lista_simbolos COMA SIMBOLO  */
+#line 196 "turing.y"
     {
         agregar_simbolo((yyvsp[0].texto));
     }
-#line 1249 "turing.tab.c"
+#line 1274 "turing.tab.c"
     break;
 
-  case 19: /* lista_estados_declarados: ID  */
-#line 220 "turing.y"
+  case 22: /* lista_estados_declarados: ID  */
+#line 206 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1257 "turing.tab.c"
+#line 1282 "turing.tab.c"
     break;
 
-  case 20: /* lista_estados_declarados: lista_estados_declarados COMA ID  */
-#line 225 "turing.y"
+  case 23: /* lista_estados_declarados: lista_estados_declarados COMA ID  */
+#line 211 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1265 "turing.tab.c"
+#line 1290 "turing.tab.c"
     break;
 
-  case 21: /* lista_estados: ID  */
-#line 232 "turing.y"
+  case 24: /* lista_estados: ID  */
+#line 218 "turing.y"
     {
         if (existe_estado((yyvsp[0].texto))) {
+            agregar_estado_final((yyvsp[0].texto));
             printf("Estado final valido: %s\n", (yyvsp[0].texto));
         } else {
-            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
+            printf(
+                "ERROR SEMANTICO: el estado final '%s' no fue declarado.\n",
+                (yyvsp[0].texto)
+            );
         }
     }
-#line 1277 "turing.tab.c"
+#line 1306 "turing.tab.c"
     break;
 
-  case 22: /* lista_estados: lista_estados COMA ID  */
-#line 241 "turing.y"
+  case 25: /* lista_estados: lista_estados COMA ID  */
+#line 231 "turing.y"
     {
         if (existe_estado((yyvsp[0].texto))) {
+            agregar_estado_final((yyvsp[0].texto));
             printf("Estado final valido: %s\n", (yyvsp[0].texto));
         } else {
-            printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
+            printf(
+                "ERROR SEMANTICO: el estado final '%s' no fue declarado.\n",
+                (yyvsp[0].texto)
+            );
         }
     }
-#line 1289 "turing.tab.c"
+#line 1322 "turing.tab.c"
     break;
 
-  case 23: /* inicial: INICIAL DOS_PUNTOS ID PUNTO_COMA  */
-#line 252 "turing.y"
+  case 26: /* inicial: INICIAL DOS_PUNTOS ID PUNTO_COMA  */
+#line 246 "turing.y"
     {
         if (existe_estado((yyvsp[-1].texto))) {
-            estado_actual = (yyvsp[-1].texto);
 
-            printf("Estado inicial valido: %s\n", (yyvsp[-1].texto));
-            printf("Estado actual guardado: %s\n", estado_actual);
+            if (dentro_subrutina && subrutina_actual != NULL) {
+                subrutina_actual->estado_inicial = (yyvsp[-1].texto);
+
+                printf(
+                    "Estado inicial de subrutina valido: %s\n",
+                    (yyvsp[-1].texto)
+                );
+            } else {
+                estado_actual = (yyvsp[-1].texto);
+
+                printf("Estado inicial valido: %s\n", (yyvsp[-1].texto));
+                printf("Estado actual guardado: %s\n", estado_actual);
+            }
+
         } else {
             printf(
                 "ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n",
@@ -1303,26 +1347,46 @@ yyreduce:
             );
         }
     }
-#line 1307 "turing.tab.c"
+#line 1351 "turing.tab.c"
     break;
 
-  case 28: /* transicion: ID COMA SIMBOLO FLECHA ID COMA SIMBOLO COMA movimiento PUNTO_COMA  */
-#line 283 "turing.y"
+  case 31: /* transicion: ID COMA SIMBOLO FLECHA ID COMA SIMBOLO COMA movimiento PUNTO_COMA  */
+#line 288 "turing.y"
     {
+        int valida = 1;
+
         if (!existe_estado((yyvsp[-9].texto))) {
-            printf("ERROR SEMANTICO: el estado origen '%s' no fue declarado.\n", (yyvsp[-9].texto));
+            printf(
+                "ERROR SEMANTICO: el estado origen '%s' no fue declarado.\n",
+                (yyvsp[-9].texto)
+            );
+            valida = 0;
         }
 
         if (!existe_estado((yyvsp[-5].texto))) {
-            printf("ERROR SEMANTICO: el estado destino '%s' no fue declarado.\n", (yyvsp[-5].texto));
+            printf(
+                "ERROR SEMANTICO: el estado destino '%s' no fue declarado.\n",
+                (yyvsp[-5].texto)
+            );
+            valida = 0;
         }
 
-        if (!existe_simbolo((yyvsp[-7].texto))) {
-            printf("ERROR SEMANTICO: el simbolo leido %s no pertenece al alfabeto.\n", (yyvsp[-7].texto));
-        }
+        if (!dentro_subrutina) {
+            if (!existe_simbolo((yyvsp[-7].texto))) {
+                printf(
+                    "ERROR SEMANTICO: el simbolo leido %s no pertenece al alfabeto.\n",
+                    (yyvsp[-7].texto)
+                );
+                valida = 0;
+            }
 
-        if (!existe_simbolo((yyvsp[-3].texto))) {
-            printf("ERROR SEMANTICO: el simbolo escrito %s no pertenece al alfabeto.\n", (yyvsp[-3].texto));
+            if (!existe_simbolo((yyvsp[-3].texto))) {
+                printf(
+                    "ERROR SEMANTICO: el simbolo escrito %s no pertenece al alfabeto.\n",
+                    (yyvsp[-3].texto)
+                );
+                valida = 0;
+            }
         }
 
         if (existe_transicion((yyvsp[-9].texto), (yyvsp[-7].texto))) {
@@ -1331,39 +1395,42 @@ yyreduce:
                 (yyvsp[-9].texto),
                 (yyvsp[-7].texto)
             );
-        } else {
+            valida = 0;
+        }
+
+        if (valida) {
             agregar_transicion((yyvsp[-9].texto), (yyvsp[-7].texto), (yyvsp[-5].texto), (yyvsp[-3].texto), (yyvsp[-1].numero));
         }
     }
-#line 1339 "turing.tab.c"
+#line 1406 "turing.tab.c"
     break;
 
-  case 29: /* movimiento: IZQ  */
-#line 316 "turing.y"
+  case 32: /* movimiento: IZQ  */
+#line 343 "turing.y"
     {
         (yyval.numero) = MOV_IZQ;
     }
-#line 1347 "turing.tab.c"
+#line 1414 "turing.tab.c"
     break;
 
-  case 30: /* movimiento: DER  */
-#line 321 "turing.y"
+  case 33: /* movimiento: DER  */
+#line 348 "turing.y"
     {
         (yyval.numero) = MOV_DER;
     }
-#line 1355 "turing.tab.c"
+#line 1422 "turing.tab.c"
     break;
 
-  case 31: /* movimiento: QUIETO  */
-#line 326 "turing.y"
+  case 34: /* movimiento: QUIETO  */
+#line 353 "turing.y"
     {
         (yyval.numero) = MOV_QUIETO;
     }
-#line 1363 "turing.tab.c"
+#line 1430 "turing.tab.c"
     break;
 
 
-#line 1367 "turing.tab.c"
+#line 1434 "turing.tab.c"
 
       default: break;
     }
@@ -1556,151 +1623,10 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 334 "turing.y"
+#line 361 "turing.y"
 
-
-void agregar_estado(char *nombre) {
-    if (cantidad_estados < MAX_ESTADOS) {
-        tabla_estados[cantidad_estados] = nombre;
-        cantidad_estados++;
-
-        printf("Estado guardado: %s\n", nombre);
-    }
-}
-int existe_estado(char *nombre) {
-    for (int i = 0; i < cantidad_estados; i++) {
-        if (strcmp(tabla_estados[i], nombre) == 0) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-void agregar_simbolo(char *simbolo) {
-    if (cantidad_simbolos < MAX_SIMBOLOS) {
-        tabla_simbolos[cantidad_simbolos] = simbolo;
-        cantidad_simbolos++;
-
-        printf("Simbolo guardado: %s\n", simbolo);
-    }
-}
-
-int existe_simbolo(char *simbolo) {
-    for (int i = 0; i < cantidad_simbolos; i++) {
-        if (strcmp(tabla_simbolos[i], simbolo) == 0) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
- void agregar_transicion(
-    char *estado_origen,
-    char *simbolo_leido,
-    char *estado_destino,
-    char *simbolo_escrito,
-    TipoMovimiento movimiento
-) {
-    if (cantidad_transiciones < MAX_TRANSICIONES) {
-        tabla_transiciones[cantidad_transiciones].estado_origen = estado_origen;
-        tabla_transiciones[cantidad_transiciones].simbolo_leido = simbolo_leido;
-        tabla_transiciones[cantidad_transiciones].estado_destino = estado_destino;
-        tabla_transiciones[cantidad_transiciones].simbolo_escrito = simbolo_escrito;
-        tabla_transiciones[cantidad_transiciones].movimiento = movimiento;
-
-        printf(
-            "Transicion guardada: %s, %s -> %s, %s, movimiento=%d\n",
-            estado_origen,
-            simbolo_leido,
-            estado_destino,
-            simbolo_escrito,
-            movimiento
-        );
-
-        cantidad_transiciones++;
-    }
-}
 
 /* Bison llama a esta función cuando encuentra un error sintáctico. */
 void yyerror(const char *s) {
     fprintf(stderr, "Error sintactico: %s\n", s);
-}
-
-int existe_transicion(char *estado, char *simbolo) {
-    for (int i = 0; i < cantidad_transiciones; i++) {
-        if (
-            strcmp(tabla_transiciones[i].estado_origen, estado) == 0 &&
-            strcmp(tabla_transiciones[i].simbolo_leido, simbolo) == 0
-        ) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-Transicion *buscar_transicion(char *estado, char *simbolo) {
-    for (int i = 0; i < cantidad_transiciones; i++) {
-        if (
-            strcmp(tabla_transiciones[i].estado_origen, estado) == 0 &&
-            strcmp(tabla_transiciones[i].simbolo_leido, simbolo) == 0
-        ) {
-            return &tabla_transiciones[i];
-        }
-    }
-
-    return NULL;
-}
-void inicializar_cinta(const char *entrada) {
-    /* Primero llenamos toda la cinta con blancos */
-    for (int i = 0; i < TAM_CINTA; i++) {
-        cinta[i] = '_';
-    }
-
-    /* Luego copiamos la entrada al comienzo de la cinta */
-    int i = 0;
-
-    while (entrada[i] != '\0' && i < TAM_CINTA) {
-        cinta[i] = entrada[i];
-        i++;
-    }
-
-    /* El cabezal comienza en la primera posición */
-    posicion_cabezal = 0;
-}
-
-void mostrar_cinta() {
-    for (int i = 0; i < 10; i++) {
-        if (i == posicion_cabezal) {
-            printf("[%c]", cinta[i]);
-        } else {
-            printf(" %c ", cinta[i]);
-        }
-    }
-
-    printf("\n");
-}
-void convertir_simbolo(char simbolo, char resultado[4]) {
-    resultado[0] = '\'';
-    resultado[1] = simbolo;
-    resultado[2] = '\'';
-    resultado[3] = '\0';
-}
-void ejecutar_transicion(Transicion *t) {
-    /* 1. Escribir el nuevo símbolo en la cinta */
-    cinta[posicion_cabezal] = t->simbolo_escrito[1];
-
-    /* 2. Cambiar al estado destino */
-    estado_actual = t->estado_destino;
-
-    /* 3. Mover el cabezal */
-    if (t->movimiento == MOV_IZQ) {
-        posicion_cabezal--;
-    }
-    else if (t->movimiento == MOV_DER) {
-        posicion_cabezal++;
-    }
-    else if (t->movimiento == MOV_QUIETO) {
-        /* No cambia la posición */
-    }
 }
