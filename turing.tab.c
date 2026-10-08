@@ -72,23 +72,68 @@
 #include <stdio.h>
 #include <string.h>
 
-
-/* Existe una función llamada yylex() que será generada por Flex
-   y que entregará tokens al parser de Bison. */
+/* Flex genera esta función */
 int yylex();
 
-/* Función que Bison utilizará para reportar errores sintácticos. */
+/* Bison usa esta función para reportar errores sintácticos */
 void yyerror(const char *s);
 
 #define MAX_ESTADOS 100
+#define MAX_SIMBOLOS 100
+#define MAX_TRANSICIONES 100
 
 char *tabla_estados[MAX_ESTADOS];
 int cantidad_estados = 0;
 
+char *tabla_simbolos[MAX_SIMBOLOS];
+int cantidad_simbolos = 0;
+
+
+/* Funciones para estados */
 void agregar_estado(char *nombre);
 int existe_estado(char *nombre);
 
-#line 92 "turing.tab.c"
+
+/* Funciones para simbolos */
+void agregar_simbolo(char *simbolo);
+int existe_simbolo(char *simbolo);
+
+
+/* Tipos de movimiento */
+typedef enum {
+    MOV_IZQ,
+    MOV_DER,
+    MOV_QUIETO
+} TipoMovimiento;
+
+
+/* Representación interna completa de una transición */
+typedef struct {
+    char *estado_origen;
+    char *simbolo_leido;
+    char *estado_destino;
+    char *simbolo_escrito;
+    TipoMovimiento movimiento;
+} Transicion;
+
+Transicion tabla_transiciones[MAX_TRANSICIONES];
+int cantidad_transiciones = 0;
+
+
+/* Funciones para transiciones */
+int existe_transicion(char *estado, char *simbolo);
+
+void agregar_transicion(
+    char *estado_origen,
+    char *simbolo_leido,
+    char *estado_destino,
+    char *simbolo_escrito,
+    TipoMovimiento movimiento
+);
+
+
+
+#line 137 "turing.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -545,12 +590,12 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
-       0,    65,    65,    67,    73,    75,    79,    92,    99,   114,
-     116,   122,   124,   131,   133,   137,   142,   144,   148,   151,
-     156,   163,   172,   183,   194,   198,   202,   204,   208,   212,
-     214,   216
+       0,   110,   110,   112,   118,   120,   124,   137,   144,   159,
+     161,   167,   169,   176,   178,   182,   192,   197,   204,   207,
+     212,   219,   228,   239,   250,   254,   258,   260,   264,   297,
+     302,   307
 };
 #endif
 
@@ -1163,24 +1208,50 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
+  case 15: /* alfabeto: ALFABETO LLAVE_IZQ lista_simbolos LLAVE_DER  */
+#line 183 "turing.y"
+ {
+        if (!existe_simbolo("'_'")) {
+            printf("ERROR SEMANTICO: el alfabeto debe incluir el simbolo blanco '_'.\n");
+        }
+    }
+#line 1219 "turing.tab.c"
+    break;
+
+  case 16: /* lista_simbolos: SIMBOLO  */
+#line 193 "turing.y"
+    {
+        agregar_simbolo((yyvsp[0].texto));
+    }
+#line 1227 "turing.tab.c"
+    break;
+
+  case 17: /* lista_simbolos: lista_simbolos COMA SIMBOLO  */
+#line 198 "turing.y"
+    {
+        agregar_simbolo((yyvsp[0].texto));
+    }
+#line 1235 "turing.tab.c"
+    break;
+
   case 19: /* lista_estados_declarados: ID  */
-#line 152 "turing.y"
+#line 208 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1172 "turing.tab.c"
+#line 1243 "turing.tab.c"
     break;
 
   case 20: /* lista_estados_declarados: lista_estados_declarados COMA ID  */
-#line 157 "turing.y"
+#line 213 "turing.y"
     {
         agregar_estado((yyvsp[0].texto));
     }
-#line 1180 "turing.tab.c"
+#line 1251 "turing.tab.c"
     break;
 
   case 21: /* lista_estados: ID  */
-#line 164 "turing.y"
+#line 220 "turing.y"
     {
         if (existe_estado((yyvsp[0].texto))) {
             printf("Estado final valido: %s\n", (yyvsp[0].texto));
@@ -1188,11 +1259,11 @@ yyreduce:
             printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
         }
     }
-#line 1192 "turing.tab.c"
+#line 1263 "turing.tab.c"
     break;
 
   case 22: /* lista_estados: lista_estados COMA ID  */
-#line 173 "turing.y"
+#line 229 "turing.y"
     {
         if (existe_estado((yyvsp[0].texto))) {
             printf("Estado final valido: %s\n", (yyvsp[0].texto));
@@ -1200,11 +1271,11 @@ yyreduce:
             printf("ERROR SEMANTICO: el estado final '%s' no fue declarado.\n", (yyvsp[0].texto));
         }
     }
-#line 1204 "turing.tab.c"
+#line 1275 "turing.tab.c"
     break;
 
   case 23: /* inicial: INICIAL DOS_PUNTOS ID PUNTO_COMA  */
-#line 184 "turing.y"
+#line 240 "turing.y"
     {
         if (existe_estado((yyvsp[-1].texto))) {
             printf("Estado inicial valido: %s\n", (yyvsp[-1].texto));
@@ -1212,11 +1283,67 @@ yyreduce:
             printf("ERROR SEMANTICO: el estado inicial '%s' no fue declarado.\n", (yyvsp[-1].texto));
         }
     }
-#line 1216 "turing.tab.c"
+#line 1287 "turing.tab.c"
+    break;
+
+  case 28: /* transicion: ID COMA SIMBOLO FLECHA ID COMA SIMBOLO COMA movimiento PUNTO_COMA  */
+#line 265 "turing.y"
+    {
+        if (!existe_estado((yyvsp[-9].texto))) {
+            printf("ERROR SEMANTICO: el estado origen '%s' no fue declarado.\n", (yyvsp[-9].texto));
+        }
+
+        if (!existe_estado((yyvsp[-5].texto))) {
+            printf("ERROR SEMANTICO: el estado destino '%s' no fue declarado.\n", (yyvsp[-5].texto));
+        }
+
+        if (!existe_simbolo((yyvsp[-7].texto))) {
+            printf("ERROR SEMANTICO: el simbolo leido %s no pertenece al alfabeto.\n", (yyvsp[-7].texto));
+        }
+
+        if (!existe_simbolo((yyvsp[-3].texto))) {
+            printf("ERROR SEMANTICO: el simbolo escrito %s no pertenece al alfabeto.\n", (yyvsp[-3].texto));
+        }
+
+        if (existe_transicion((yyvsp[-9].texto), (yyvsp[-7].texto))) {
+            printf(
+                "ERROR SEMANTICO: ya existe una transicion para (%s, %s).\n",
+                (yyvsp[-9].texto),
+                (yyvsp[-7].texto)
+            );
+        } else {
+            agregar_transicion((yyvsp[-9].texto), (yyvsp[-7].texto), (yyvsp[-5].texto), (yyvsp[-3].texto), (yyvsp[-1].numero));
+        }
+    }
+#line 1319 "turing.tab.c"
+    break;
+
+  case 29: /* movimiento: IZQ  */
+#line 298 "turing.y"
+    {
+        (yyval.numero) = MOV_IZQ;
+    }
+#line 1327 "turing.tab.c"
+    break;
+
+  case 30: /* movimiento: DER  */
+#line 303 "turing.y"
+    {
+        (yyval.numero) = MOV_DER;
+    }
+#line 1335 "turing.tab.c"
+    break;
+
+  case 31: /* movimiento: QUIETO  */
+#line 308 "turing.y"
+    {
+        (yyval.numero) = MOV_QUIETO;
+    }
+#line 1343 "turing.tab.c"
     break;
 
 
-#line 1220 "turing.tab.c"
+#line 1347 "turing.tab.c"
 
       default: break;
     }
@@ -1409,7 +1536,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 222 "turing.y"
+#line 316 "turing.y"
 
 
 void agregar_estado(char *nombre) {
@@ -1429,11 +1556,67 @@ int existe_estado(char *nombre) {
 
     return 0;
 }
+void agregar_simbolo(char *simbolo) {
+    if (cantidad_simbolos < MAX_SIMBOLOS) {
+        tabla_simbolos[cantidad_simbolos] = simbolo;
+        cantidad_simbolos++;
+
+        printf("Simbolo guardado: %s\n", simbolo);
+    }
+}
+
+int existe_simbolo(char *simbolo) {
+    for (int i = 0; i < cantidad_simbolos; i++) {
+        if (strcmp(tabla_simbolos[i], simbolo) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+void agregar_transicion(
+    char *estado_origen,
+    char *simbolo_leido,
+    char *estado_destino,
+    char *simbolo_escrito,
+    TipoMovimiento movimiento
+) {
+    if (cantidad_transiciones < MAX_TRANSICIONES) {
+        tabla_transiciones[cantidad_transiciones].estado_origen = estado_origen;
+        tabla_transiciones[cantidad_transiciones].simbolo_leido = simbolo_leido;
+        tabla_transiciones[cantidad_transiciones].estado_destino = estado_destino;
+        tabla_transiciones[cantidad_transiciones].simbolo_escrito = simbolo_escrito;
+        tabla_transiciones[cantidad_transiciones].movimiento = movimiento;
+    printf(
+        "Transicion guardada: %s, %s -> %s, %s, movimiento=%d\n",
+        estado_origen,
+        simbolo_leido,
+        estado_destino,
+        simbolo_escrito,
+        movimiento
+    );
+        cantidad_transiciones++;
+    }
+}
 
 /* Bison llama a esta función cuando encuentra un error sintáctico. */
 void yyerror(const char *s) {
     fprintf(stderr, "Error sintactico: %s\n", s);
 }
+
+int existe_transicion(char *estado, char *simbolo) {
+    for (int i = 0; i < cantidad_transiciones; i++) {
+        if (
+            strcmp(tabla_transiciones[i].estado_origen, estado) == 0 &&
+            strcmp(tabla_transiciones[i].simbolo_leido, simbolo) == 0
+        ) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 
 
 /* El programa inicia llamando al parser.

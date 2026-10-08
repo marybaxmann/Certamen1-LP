@@ -873,7 +873,7 @@ YY_RULE_SETUP
 #line 54 "turing.l"
 {
     yylval.texto = strdup(yytext);
-    return SIMBOLO;
+    return SIMBOLO;    
 }
 	YY_BREAK
 case 13:
